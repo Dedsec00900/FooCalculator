@@ -1,0 +1,2810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Money Guy FOO Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy-mid: #132240;
+    --navy-light: #1e3a5f;
+    --blue: #1a6bc4;
+    --blue-light: #2e8de8;
+    --blue-pale: #dbeafe;
+    --white: #ffffff;
+    --off-white: #f4f7fb;
+    --gray-100: #e8eef6;
+    --gray-200: #c8d6e8;
+    --gray-400: #7a9ab8;
+    --gray-600: #4a6280;
+    --green: #16a34a;
+    --green-light: #22c55e;
+    --green-pale: #dcfce7;
+    --gold: #d97706;
+    --gold-light: #f59e0b;
+    --gold-pale: #fef3c7;
+    --yellow: #eab308;
+    --yellow-pale: #fefce8;
+    --red: #dc2626;
+    --red-pale: #fee2e2;
+    --bar-complete: #1a6bc4;
+    --bar-auto: #16a34a;
+    --bar-planned: #eab308;
+    --radius: 12px;
+    --radius-lg: 18px;
+    --shadow: 0 4px 24px rgba(10,22,40,0.10);
+    --shadow-lg: 0 8px 40px rgba(10,22,40,0.16);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--off-white);
+    color: var(--navy);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER BAND ── */
+  .site-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 60%, var(--navy-light) 100%);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(10,22,40,0.4);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 32px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-logo {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--blue-light), var(--blue));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -1px;
+    flex-shrink: 0;
+  }
+
+  .brand-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.3px;
+    line-height: 1.1;
+  }
+
+  .brand-text span {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--blue-light);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-sm {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    border: none;
+    letter-spacing: 0.3px;
+    transition: all 0.2s;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.8);
+  }
+  .btn-outline:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.5); }
+
+  .btn-primary {
+    background: var(--blue-light);
+    color: white;
+  }
+  .btn-primary:hover { background: #3a9df8; }
+
+  /* ── GLOBAL FOO PROGRESS ── */
+  .foo-progress-band {
+    padding: 12px 32px 14px;
+  }
+
+  .foo-progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .foo-progress-label span {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .foo-progress-label .foo-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gold-light);
+  }
+
+  .foo-progress-track {
+    height: 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 999px;
+    overflow: hidden;
+    display: flex;
+    gap: 2px;
+  }
+
+  .foo-step-pip {
+    flex: 1;
+    height: 100%;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    transition: background 0.4s;
+    position: relative;
+  }
+  .foo-step-pip.complete { background: var(--bar-complete); }
+  .foo-step-pip.partial { background: var(--bar-planned); }
+  .foo-step-pip.automated { background: var(--bar-complete); } /* automated = blue on global bar */
+  .foo-step-pip[onclick]:hover { opacity: 0.75; transform: scaleY(1.3); transition: opacity 0.15s, transform 0.15s; }
+
+  /* ── MASTER INPUTS ── */
+  .master-inputs-wrap {
+    background: white;
+    border-bottom: 1px solid var(--gray-100);
+    padding: 20px 32px;
+    box-shadow: 0 2px 12px rgba(10,22,40,0.06);
+  }
+
+  .master-inputs-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 14px;
+  }
+
+  .master-inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .input-field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-600);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .input-field input {
+    padding: 9px 12px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--navy);
+    background: var(--off-white);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+
+  .input-field input:focus {
+    outline: none;
+    border-color: var(--blue-light);
+    box-shadow: 0 0 0 3px rgba(46,141,232,0.15);
+    background: white;
+  }
+
+  .input-field .computed-val {
+    padding: 9px 12px;
+    border: 1.5px solid var(--gray-100);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--navy);
+    background: var(--gray-100);
+    font-weight: 600;
+  }
+
+  .computed-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: var(--blue-pale);
+    color: var(--blue);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* ── SAVINGS RATE BANNER ── */
+  .savings-banner {
+    background: linear-gradient(90deg, var(--navy-mid), var(--navy-light));
+    padding: 12px 32px;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .savings-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .savings-stat .s-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .savings-stat .s-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: white;
+  }
+
+  .savings-stat .s-val.good { color: var(--green-light); }
+  .savings-stat .s-val.warn { color: var(--gold-light); }
+  .savings-stat .s-val.bad { color: #f87171; }
+
+  .savings-note {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    font-style: italic;
+    margin-left: auto;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+
+  .section-sub {
+    font-size: 13px;
+    color: var(--gray-600);
+    margin-bottom: 22px;
+  }
+
+  /* ── SCORECARD ── */
+  .scorecard {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    border: 1.5px solid var(--gray-100);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+
+  .scorecard:hover { box-shadow: var(--shadow-lg); }
+
+  .scorecard-header {
+    display: flex;
+    align-items: center;
+    padding: 18px 22px;
+    cursor: pointer;
+    user-select: none;
+    gap: 16px;
+    transition: background 0.15s;
+  }
+
+  .scorecard-header:hover { background: var(--off-white); }
+
+  .step-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 900;
+    flex-shrink: 0;
+    color: white;
+    background: var(--navy-light);
+  }
+
+  .step-badge.complete { background: var(--blue); }
+  .step-badge.partial { background: var(--gold); }
+  .step-badge.automated { background: var(--green); }
+
+  .step-icon {
+    font-size: 26px;
+    flex-shrink: 0;
+    width: 32px;
+    text-align: center;
+  }
+
+  .step-info { flex: 1; min-width: 0; }
+
+  .step-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.2;
+  }
+
+  .step-subtitle {
+    font-size: 12px;
+    color: var(--gray-600);
+    margin-top: 2px;
+  }
+
+  .step-bar-wrap { flex: 1.5; min-width: 120px; }
+
+  .step-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--gray-400);
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  .step-bar-track {
+    height: 8px;
+    background: var(--gray-100);
+    border-radius: 999px;
+    overflow: hidden;
+    display: flex;
+  }
+
+  .bar-seg {
+    height: 100%;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .bar-seg.complete { background: var(--bar-complete); }
+  .bar-seg.automated { background: var(--bar-auto); }
+  .bar-seg.planned { background: var(--bar-planned); }
+
+  .step-status-chip {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .chip-complete { background: var(--blue-pale); color: var(--blue); }
+  .chip-automated { background: var(--green-pale); color: var(--green); }
+  .chip-planned { background: var(--yellow-pale); color: #a16207; }
+  .chip-none { background: var(--gray-100); color: var(--gray-600); }
+
+  .chevron {
+    font-size: 14px;
+    color: var(--gray-400);
+    transition: transform 0.3s;
+    flex-shrink: 0;
+    margin-left: 4px;
+  }
+  .scorecard.open .chevron { transform: rotate(180deg); }
+
+  /* ── SCORECARD BODY ── */
+  .scorecard-body {
+    display: none;
+    padding: 0 22px 22px;
+    border-top: 1px solid var(--gray-100);
+  }
+
+  .scorecard.open .scorecard-body { display: block; }
+
+  .card-body-inner {
+    padding-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .card-description {
+    font-size: 13px;
+    color: var(--gray-600);
+    line-height: 1.6;
+    background: var(--off-white);
+    padding: 12px 14px;
+    border-radius: 8px;
+    border-left: 3px solid var(--blue-light);
+  }
+
+  /* ── ITEMS TABLE ── */
+  .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .items-table thead tr {
+    background: var(--navy);
+  }
+
+  .items-table thead th {
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .items-table thead th:last-child { text-align: center; }
+
+  .items-table tbody tr {
+    border-bottom: 1px solid var(--gray-100);
+    transition: background 0.15s;
+  }
+
+  .items-table tbody tr:hover { background: var(--off-white); }
+
+  .items-table tbody td {
+    padding: 9px 12px;
+    color: var(--navy);
+    vertical-align: middle;
+  }
+
+  .items-table tbody td input,
+  .items-table tbody td select {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--navy);
+    background: white;
+  }
+
+  .items-table tbody td input:focus,
+  .items-table tbody td select:focus {
+    outline: none;
+    border-color: var(--blue-light);
+  }
+
+  .highest-badge {
+    display: inline-block;
+    background: var(--gold-pale);
+    color: var(--gold);
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+
+  .btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-add:hover { background: var(--navy-light); }
+
+  .btn-del {
+    background: none;
+    border: none;
+    color: var(--gray-400);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.15s;
+    display: block;
+    margin: 0 auto;
+  }
+  .btn-del:hover { color: var(--red); background: var(--red-pale); }
+
+  /* ── STEP-SPECIFIC INPUTS ── */
+  .step-inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .step-input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .step-input-field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-600);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .step-input-field input,
+  .step-input-field select {
+    padding: 8px 12px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--navy);
+    background: var(--off-white);
+    transition: border-color 0.2s;
+  }
+
+  .step-input-field input:focus,
+  .step-input-field select:focus {
+    outline: none;
+    border-color: var(--blue-light);
+    background: white;
+  }
+
+  /* ── PROGRESS LEGEND ── */
+  .progress-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: var(--off-white);
+    border-radius: 8px;
+    border: 1px solid var(--gray-100);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--gray-600);
+    font-weight: 500;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ── METRICS ROW ── */
+  .metrics-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .metric-card {
+    flex: 1;
+    min-width: 130px;
+    background: var(--off-white);
+    border: 1.5px solid var(--gray-100);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+
+  .metric-card .m-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 4px;
+  }
+
+  .metric-card .m-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--navy);
+  }
+
+  .metric-card .m-val.good { color: var(--green); }
+  .metric-card .m-val.warn { color: var(--gold); }
+  .metric-card .m-val.bad { color: var(--red); }
+
+  .metric-card .m-sub {
+    font-size: 11px;
+    color: var(--gray-400);
+    margin-top: 2px;
+  }
+
+  /* ── STATUS TOGGLE ── */
+  .status-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .status-btn {
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    border: 1.5px solid var(--gray-200);
+    background: white;
+    color: var(--gray-600);
+    transition: all 0.15s;
+  }
+
+  .status-btn:hover { border-color: var(--navy); color: var(--navy); }
+  .status-btn.active-complete { background: var(--blue-pale); border-color: var(--blue); color: var(--blue); }
+  .status-btn.active-auto { background: var(--green-pale); border-color: var(--green); color: var(--green); }
+  .status-btn.active-planned { background: var(--yellow-pale); border-color: var(--yellow); color: #a16207; }
+
+  /* ── DEBT HIGH INTEREST THRESHOLD ── */
+  .threshold-note {
+    font-size: 12px;
+    color: var(--gray-600);
+    padding: 8px 12px;
+    background: var(--gold-pale);
+    border-radius: 7px;
+    border-left: 3px solid var(--gold-light);
+  }
+
+  /* ── DUAL SAVINGS DISPLAY ── */
+  .dual-savings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .dual-card {
+    padding: 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--gray-100);
+  }
+
+  .dual-card.standard { background: var(--blue-pale); border-color: var(--blue); }
+  .dual-card.strict { background: var(--gold-pale); border-color: var(--gold-light); }
+
+  .dual-card .d-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .dual-card.standard .d-label { color: var(--blue); }
+  .dual-card.strict .d-label { color: var(--gold); }
+
+  .dual-card .d-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--navy);
+  }
+
+  .dual-card .d-sub {
+    font-size: 11px;
+    color: var(--gray-600);
+    margin-top: 3px;
+  }
+
+  /* ── GOAL ITEMS ── */
+  .goal-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--gray-100);
+    border-radius: 9px;
+    background: white;
+    margin-bottom: 8px;
+  }
+
+  .goal-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--blue);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .goal-item-content { flex: 1; display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .goal-item-content input {
+    flex: 1;
+    min-width: 120px;
+    padding: 5px 8px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--navy);
+  }
+
+  .goal-item-content input:focus { outline: none; border-color: var(--blue-light); }
+
+  .goal-item.checked { opacity: 0.6; }
+  .goal-item.checked .goal-item-content input { text-decoration: line-through; color: var(--gray-400); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--navy);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    .header-top { padding: 12px 16px; }
+    .foo-progress-band { padding: 10px 16px; }
+    .master-inputs-wrap { padding: 16px; }
+    .savings-banner { padding: 10px 16px; gap: 16px; }
+    .main-content { padding: 16px 12px 40px; }
+    .scorecard-header { flex-wrap: wrap; gap: 10px; }
+    .step-bar-wrap { width: 100%; }
+    .dual-savings { grid-template-columns: 1fr; }
+    .savings-note { display: none; }
+    .header-actions { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     STICKY HEADER
+═══════════════════════════════════════════ -->
+<header class="site-header">
+  <div class="header-top">
+    <div class="brand">
+      <div class="brand-logo">MG</div>
+      <div class="brand-text">
+        <h1>Money Guy FOO Calculator</h1>
+        <span>Financial Order of Operations</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-sm btn-outline" onclick="exportData()">⬇ Export</button>
+      <button class="btn-sm btn-outline" onclick="importData()">⬆ Import</button>
+      <button class="btn-sm btn-outline" id="btn_clear" onclick="clearData()" style="display:none;border-color:rgba(220,38,38,0.4);color:rgba(255,120,120,0.9);">✕ Clear</button>
+      <button class="btn-sm btn-primary" onclick="saveData()">💾 Save</button>
+    </div>
+  </div>
+  <div class="foo-progress-band">
+    <div class="foo-progress-label">
+      <span>FOO Progress</span>
+      <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;">Savings Rate: <span class="foo-pct" id="fooTotalPct">0%</span></span>
+    </div>
+    <div class="foo-progress-track" id="fooPips">
+      <div class="foo-step-pip" id="pip1" title="Step 1: Deductibles" onclick="scrollToCard(1)" style="cursor:pointer;"></div>
+      <div class="foo-step-pip" id="pip2" title="Step 2: Employer Match" onclick="scrollToCard(2)" style="cursor:pointer;"></div>
+      <div class="foo-step-pip" id="pip3" title="Step 3: High-Interest Debt" onclick="scrollToCard(3)" style="cursor:pointer;"></div>
+      <div class="foo-step-pip" id="pip4" title="Step 4: Emergency Reserves" onclick="scrollToCard(4)" style="cursor:pointer;"></div>
+      <div class="foo-step-pip" id="pip5" title="Step 5: Roth & HSA" onclick="scrollToCard(5)" style="cursor:pointer;"></div>
+      <div class="foo-step-pip" id="pip6" title="Step 6: Max Retirement" onclick="scrollToCard(6)" style="cursor:pointer;"></div>
+      <div class="foo-step-pip" id="pip7" title="Step 7: Hyper-Accumulation" onclick="scrollToCard(7)" style="cursor:pointer;"></div>
+      <div class="foo-step-pip" id="pip8" title="Step 8: Prepay Low-Interest Debt" onclick="scrollToCard(8)" style="cursor:pointer;"></div>
+      <div class="foo-step-pip" id="pip9" title="Step 9: Beyond the Basics" onclick="scrollToCard(9)" style="cursor:pointer;"></div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════
+     MASTER INPUTS
+═══════════════════════════════════════════ -->
+<div class="master-inputs-wrap">
+  <div class="master-inputs-title">Profile &amp; Key Inputs</div>
+  <div class="master-inputs-grid">
+    <div class="input-field">
+      <label>Age</label>
+      <input type="number" id="m_age" placeholder="e.g. 32" min="18" max="90" oninput="compute()">
+    </div>
+    <div class="input-field">
+      <label>Annual Income</label>
+      <input type="number" id="m_income" placeholder="$0" min="0" oninput="compute()">
+    </div>
+    <div class="input-field">
+      <label>Monthly Expenses</label>
+      <input type="number" id="m_monthly_exp" placeholder="$0" min="0" oninput="compute()">
+    </div>
+    <div class="input-field">
+      <label>Cash Reserve</label>
+      <input type="number" id="m_cash" placeholder="$0" min="0" oninput="compute()">
+    </div>
+    <div class="input-field">
+      <label>Consumer Debt <span class="computed-badge">Auto</span></label>
+      <div class="computed-val" id="m_total_debt">$0</div>
+    </div>
+    <div class="input-field">
+      <label>Savings Rate <span class="computed-badge">Auto</span></label>
+      <div class="computed-val" id="m_savings_rate">0.0%</div>
+    </div>
+    <div class="input-field">
+      <label>Filing Status</label>
+      <select id="m_filing" oninput="compute()" style="padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--navy);background:var(--off-white);">
+        <option value="single">Single</option>
+        <option value="married">Married</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SAVINGS RATE BANNER
+═══════════════════════════════════════════ -->
+<div class="savings-banner">
+  <div class="savings-stat">
+    <span class="s-label">Savings Rate</span>
+    <span class="s-val" id="sb_rate">0.0%</span>
+  </div>
+  <div class="savings-stat">
+    <span class="s-label">Target</span>
+    <span class="s-val good">25%</span>
+  </div>
+  <div class="savings-stat">
+    <span class="s-label">Annual Savings</span>
+    <span class="s-val" id="sb_annual_savings">$0</span>
+  </div>
+  <div class="savings-stat">
+    <span class="s-label">Gap to 25%</span>
+    <span class="s-val" id="sb_gap">—</span>
+  </div>
+  <span class="savings-note" id="sb_note">Enter income &amp; contributions to see savings rate</span>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════ -->
+<div class="main-content">
+  <p class="section-title">Financial Order of Operations</p>
+  <p class="section-sub">Complete each step in order. Expand a card to add details — the scorecard and global progress update automatically.</p>
+
+  <!-- LEGEND -->
+  <div class="progress-legend" style="margin-bottom:18px;">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--bar-complete)"></div> Complete / Fully Funded</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--bar-auto)"></div> Automated (payroll / auto-transfer)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--bar-planned)"></div> Planned (manual / in-progress)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--gray-200)"></div> Not Started</div>
+  </div>
+
+  <!-- ─── STEP 1: Deductibles ─── -->
+  <div class="scorecard" id="card1">
+    <div class="scorecard-header" onclick="toggleCard(1)">
+      <div class="step-badge" id="badge1">1</div>
+      <div class="step-icon">🛡️</div>
+      <div class="step-info">
+        <div class="step-title">Deductibles Covered</div>
+        <div class="step-subtitle">Cash reserve ≥ highest deductible</div>
+      </div>
+      <div class="step-bar-wrap">
+        <div class="step-bar-labels">
+          <span>Coverage</span>
+          <span id="bar1_pct">0%</span>
+        </div>
+        <div class="step-bar-track">
+          <div class="bar-seg complete" id="bar1_c" style="width:0%"></div>
+          <div class="bar-seg automated" id="bar1_a" style="width:0%"></div>
+          <div class="bar-seg planned" id="bar1_p" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="step-status-chip chip-none" id="chip1">Not Started</div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="scorecard-body">
+      <div class="card-body-inner">
+        <div class="card-description">
+          Before anything else, make sure you have enough cash to cover your highest insurance deductible. This protects you from going into debt if disaster strikes. Add each of your insurance policies below, or skip if you have no deductibles to track.
+        </div>
+        <div id="s1_confirm_wrap" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 14px;background:var(--off-white);border-radius:8px;border:1.5px solid var(--gray-200);">
+          <span style="font-size:13px;font-weight:600;color:var(--navy);">Do you have insurance policies with deductibles to track?</span>
+          <button class="status-btn" id="s1_confirm_yes" onclick="confirmStep1(true)">✓ Yes, add policies</button>
+          <button class="status-btn" id="s1_confirm_skip" onclick="confirmStep1(false)">→ Skip — no deductibles</button>
+        </div>
+        <div id="s1_detail_wrap" style="display:none;flex-direction:column;gap:16px;">
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="m-label">Cash Reserve</div>
+            <div class="m-val" id="s1_cash_val">$0</div>
+            <div class="m-sub">From master inputs</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Highest Deductible</div>
+            <div class="m-val" id="s1_high_ded">$0</div>
+            <div class="m-sub">Across all policies</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Coverage Ratio</div>
+            <div class="m-val" id="s1_ratio">—</div>
+            <div class="m-sub">Cash / Deductible</div>
+          </div>
+        </div>
+        <table class="items-table" id="s1_table">
+          <thead>
+            <tr>
+              <th>Insurance Type</th>
+              <th>Policy Name / Notes</th>
+              <th>Deductible ($)</th>
+              <th>Status / Override</th>
+              <th style="text-align:center">✕</th>
+            </tr>
+          </thead>
+          <tbody id="s1_body"></tbody>
+        </table>
+        <button class="btn-add" onclick="addDeductible()">+ Add Policy</button>
+        </div><!-- /s1_detail_wrap -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── STEP 2: Employer Match ─── -->
+  <div class="scorecard" id="card2">
+    <div class="scorecard-header" onclick="toggleCard(2)">
+      <div class="step-badge" id="badge2">2</div>
+      <div class="step-icon">🤝</div>
+      <div class="step-info">
+        <div class="step-title">Employer Match</div>
+        <div class="step-subtitle">Capture every free dollar of match</div>
+      </div>
+      <div class="step-bar-wrap">
+        <div class="step-bar-labels">
+          <span>Match Captured</span>
+          <span id="bar2_pct">0%</span>
+        </div>
+        <div class="step-bar-track">
+          <div class="bar-seg complete" id="bar2_c" style="width:0%"></div>
+          <div class="bar-seg automated" id="bar2_a" style="width:0%"></div>
+          <div class="bar-seg planned" id="bar2_p" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="step-status-chip chip-none" id="chip2">Not Started</div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="scorecard-body">
+      <div class="card-body-inner">
+        <div class="card-description">
+          Free money! Always contribute at least enough to capture your full employer match. This is an immediate 50–100% return on your money. First, confirm whether your employer offers a match.
+        </div>
+        <div id="s2_confirm_wrap" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 14px;background:var(--off-white);border-radius:8px;border:1.5px solid var(--gray-200);">
+          <span style="font-size:13px;font-weight:600;color:var(--navy);">Does your employer offer a retirement match?</span>
+          <button class="status-btn" id="s2_confirm_yes" onclick="confirmStep2(true)">✓ Yes</button>
+          <button class="status-btn" id="s2_confirm_no" onclick="confirmStep2(false)">✗ No match offered</button>
+        </div>
+        <div id="s2_detail_wrap" style="display:none;flex-direction:column;gap:16px;">
+          <div class="step-inputs-grid">
+          <div class="step-input-field">
+            <label>Employer Match % (of salary)</label>
+            <input type="number" id="s2_match_pct" placeholder="e.g. 4" min="0" max="100" oninput="compute()">
+          </div>
+          <div class="step-input-field">
+            <label>My Contribution % (of salary)</label>
+            <input type="number" id="s2_contrib_pct" placeholder="e.g. 4" min="0" max="100" oninput="compute()">
+          </div>
+          <div class="step-input-field">
+            <label>Match Type</label>
+            <select id="s2_match_type" oninput="compute()">
+              <option value="100">100% match up to %</option>
+              <option value="50">50% match up to %</option>
+            </select>
+          </div>
+          <div class="step-input-field">
+            <label>Contribution Method</label>
+            <select id="s2_method" oninput="compute()">
+              <option value="auto">Automated (payroll deduction)</option>
+              <option value="none">Not contributing</option>
+            </select>
+          </div>
+        </div><!-- /step-inputs-grid -->
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="m-label">Your Annual Contribution</div>
+            <div class="m-val" id="s2_my_contrib">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Employer Match</div>
+            <div class="m-val good" id="s2_match_amt">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Match Captured</div>
+            <div class="m-val" id="s2_captured">0%</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Uncaptured Match</div>
+            <div class="m-val bad" id="s2_missed">$0</div>
+          </div>
+        </div><!-- /metrics-row -->
+        </div><!-- /s2_detail_wrap -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── STEP 3: High Interest Debt ─── -->
+  <div class="scorecard" id="card3">
+    <div class="scorecard-header" onclick="toggleCard(3)">
+      <div class="step-badge" id="badge3">3</div>
+      <div class="step-icon">💳</div>
+      <div class="step-info">
+        <div class="step-title">High-Interest Debt Payoff</div>
+        <div class="step-subtitle">Eliminate debt above threshold (~6%)</div>
+      </div>
+      <div class="step-bar-wrap">
+        <div class="step-bar-labels">
+          <span>Debt Eliminated</span>
+          <span id="bar3_pct">0%</span>
+        </div>
+        <div class="step-bar-track">
+          <div class="bar-seg complete" id="bar3_c" style="width:0%"></div>
+          <div class="bar-seg automated" id="bar3_a" style="width:0%"></div>
+          <div class="bar-seg planned" id="bar3_p" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="step-status-chip chip-none" id="chip3">Not Started</div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="scorecard-body">
+      <div class="card-body-inner">
+        <div class="card-description">
+          The Money Guy approach: high-interest consumer debt should be eliminated before investing beyond the match. Rates are evaluated against age-adjusted thresholds for credit cards, student loans, and auto loans. Add all your consumer debt below.
+        </div>
+        <div id="s3_confirm_wrap" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 14px;background:var(--off-white);border-radius:8px;border:1.5px solid var(--gray-200);">
+          <span style="font-size:13px;font-weight:600;color:var(--navy);">Do you have any consumer debt?</span>
+          <button class="status-btn" id="s3_confirm_yes" onclick="confirmStep3(true)">✓ Yes, I have consumer debt</button>
+          <button class="status-btn" id="s3_confirm_no" onclick="confirmStep3(false)">✗ No consumer debt</button>
+        </div>
+        <div id="s3_detail_wrap" style="display:none;flex-direction:column;gap:16px;">
+          <div class="threshold-note">
+          ⚠️ <strong>Age-adjusted thresholds (Money Guy guidance):</strong>
+          Credit Cards: always high-interest. &nbsp;
+          Student Loans: 20s ≥ 6%, 30s ≥ 5%, 40s+ ≥ 4%. &nbsp;
+          Auto Loans: 20s ≥ 10%, 30s ≥ 9%, 40s+ ≥ 8%. &nbsp;
+          All other debt: ≥ 6%. Debts below threshold move to Step 8.
+        </div>
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="m-label">High-Interest Debt</div>
+            <div class="m-val bad" id="s3_hi_total">$0</div>
+            <div class="m-sub">Above age-adjusted threshold</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Avg Interest Rate</div>
+            <div class="m-val" id="s3_avg_rate">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Status</div>
+            <div class="m-val" id="s3_status_val">—</div>
+          </div>
+        </div>
+        <table class="items-table" id="s3_table">
+          <thead>
+            <tr>
+              <th>Debt Name</th>
+              <th>Debt Type</th>
+              <th>Balance ($)</th>
+              <th>Interest Rate (%)</th>
+              <th>Min Payment ($/mo)</th>
+              <th>Status</th>
+              <th style="text-align:center">✕</th>
+            </tr>
+          </thead>
+          <tbody id="s3_body"></tbody>
+        </table>
+        <button class="btn-add" onclick="addDebt()">+ Add Debt</button>
+        </div><!-- /s3_detail_wrap -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── STEP 4: Emergency Reserves ─── -->
+  <div class="scorecard" id="card4">
+    <div class="scorecard-header" onclick="toggleCard(4)">
+      <div class="step-badge" id="badge4">4</div>
+      <div class="step-icon">🏦</div>
+      <div class="step-info">
+        <div class="step-title">Emergency Reserves</div>
+        <div class="step-subtitle">3–6 months of expenses saved</div>
+      </div>
+      <div class="step-bar-wrap">
+        <div class="step-bar-labels">
+          <span>Reserve Coverage</span>
+          <span id="bar4_pct">0%</span>
+        </div>
+        <div class="step-bar-track">
+          <div class="bar-seg complete" id="bar4_c" style="width:0%"></div>
+          <div class="bar-seg automated" id="bar4_a" style="width:0%"></div>
+          <div class="bar-seg planned" id="bar4_p" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="step-status-chip chip-none" id="chip4">Not Started</div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="scorecard-body">
+      <div class="card-body-inner">
+        <div class="card-description">
+          Build a true emergency fund of 3–6 months of living expenses (not income) in a liquid, FDIC-insured account. This is your financial force field.
+        </div>
+        <div class="step-inputs-grid">
+          <div class="step-input-field">
+            <label>Target (months)</label>
+            <select id="s4_target_mo" oninput="compute()">
+              <option value="3">3 months</option>
+              <option value="4">4 months</option>
+              <option value="5">5 months</option>
+              <option value="6" selected>6 months</option>
+            </select>
+          </div>
+          <div class="step-input-field">
+            <label>Saving Method Override</label>
+            <select id="s4_method" oninput="compute()">
+              <option value="auto-detect">Auto-detect</option>
+              <option value="auto">Automated (auto-transfer)</option>
+              <option value="planned">Planned (manual)</option>
+              <option value="none">Cash (not saving separately)</option>
+            </select>
+            <span id="s4_method_label" style="display:none;font-size:11px;font-weight:600;color:var(--blue);margin-top:3px;"></span>
+          </div>
+        </div>
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="m-label">Monthly Expenses</div>
+            <div class="m-val" id="s4_monthly">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Target Reserve</div>
+            <div class="m-val" id="s4_target">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Current Cash</div>
+            <div class="m-val" id="s4_current">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Months Covered</div>
+            <div class="m-val" id="s4_months_covered">0.0</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Gap to Fill</div>
+            <div class="m-val bad" id="s4_gap">$0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── STEP 5: Roth & HSA ─── -->
+  <div class="scorecard" id="card5">
+    <div class="scorecard-header" onclick="toggleCard(5)">
+      <div class="step-badge" id="badge5">5</div>
+      <div class="step-icon">🌱</div>
+      <div class="step-info">
+        <div class="step-title">Roth IRA &amp; HSA</div>
+        <div class="step-subtitle">Max tax-advantaged accounts</div>
+      </div>
+      <div class="step-bar-wrap">
+        <div class="step-bar-labels">
+          <span>Accounts Funded</span>
+          <span id="bar5_pct">0%</span>
+        </div>
+        <div class="step-bar-track">
+          <div class="bar-seg complete" id="bar5_c" style="width:0%"></div>
+          <div class="bar-seg automated" id="bar5_a" style="width:0%"></div>
+          <div class="bar-seg planned" id="bar5_p" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="step-status-chip chip-none" id="chip5">Not Started</div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="scorecard-body">
+      <div class="card-body-inner">
+        <div class="card-description">
+          Fund a Roth IRA (tax-free growth for life) and an HSA if you have an eligible HDHP (triple tax advantage — the best account in existence). Limits auto-adjust for age 50+ catch-up contributions.
+        </div>
+        <div style="font-size:12px;color:var(--gray-600);background:var(--off-white);padding:10px 14px;border-radius:8px;" id="s5_limits_display">
+          Loading limits...
+        </div>
+
+        <!-- ── Roth IRA Section ── -->
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);padding:4px 0 2px;">Roth IRA</div>
+        <div class="step-inputs-grid">
+          <div class="step-input-field">
+            <label>Roth IRA — Self (Annual)</label>
+            <input type="number" id="s5_roth_contrib" placeholder="$0" min="0" oninput="onRothInput('s5_roth_contrib','s5_roth_method');compute()">
+          </div>
+          <div class="step-input-field">
+            <label>Roth Method — Self</label>
+            <select id="s5_roth_method" oninput="compute()">
+              <option value="none">Not Contributing</option>
+              <option value="planned">Planned</option>
+              <option value="auto">Automated</option>
+              <option value="complete">Complete</option>
+            </select>
+          </div>
+          <!-- Spouse Roth — shown when filing=married -->
+          <div class="step-input-field" id="s5_spouse_roth_row" style="display:none;">
+            <label>Roth IRA — Spouse (Annual)</label>
+            <input type="number" id="s5_roth_spouse_contrib" placeholder="$0" min="0" oninput="onRothInput('s5_roth_spouse_contrib','s5_roth_spouse_method');compute()">
+          </div>
+          <div class="step-input-field" id="s5_spouse_roth_method_row" style="display:none;">
+            <label>Roth Method — Spouse</label>
+            <select id="s5_roth_spouse_method" oninput="compute()">
+              <option value="none">Not Contributing</option>
+              <option value="planned">Planned</option>
+              <option value="auto">Automated</option>
+              <option value="complete">Complete</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Roth metrics -->
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="m-label">Roth Limit (Self)</div>
+            <div class="m-val" id="s5_roth_limit">—</div>
+          </div>
+          <div class="metric-card" id="s5_spouse_roth_metric" style="display:none;">
+            <div class="m-label">Roth Limit (Spouse)</div>
+            <div class="m-val" id="s5_roth_spouse_limit">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Roth Funded</div>
+            <div class="m-val" id="s5_roth_pct">0%</div>
+          </div>
+        </div>
+
+        <!-- ── HSA Section — shown when eligible ── -->
+        <div id="s5_hsa_section" style="display:none;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);padding:8px 0 2px;border-top:1px solid var(--gray-100);margin-top:4px;">Health Savings Account (HSA)</div>
+          <div class="step-inputs-grid">
+            <div class="step-input-field" id="s5_hsa_coverage_row">
+              <label>HSA Coverage Type</label>
+              <select id="s5_hsa_coverage" oninput="compute()">
+                <option value="self">Self-only</option>
+                <option value="family">Family</option>
+              </select>
+            </div>
+            <div class="step-input-field" id="s5_hsa_row">
+              <label>HSA Annual Contribution</label>
+              <input type="number" id="s5_hsa_contrib" placeholder="$0" min="0" oninput="compute()">
+            </div>
+            <div class="step-input-field" id="s5_hsa_method_row">
+              <label>HSA Method</label>
+              <select id="s5_hsa_method" oninput="compute()">
+                <option value="none">Not Contributing</option>
+                <option value="planned">Planned</option>
+                <option value="auto">Automated (payroll)</option>
+                <option value="complete">Complete</option>
+              </select>
+            </div>
+            <div class="step-input-field" id="s5_hsa_employer_row">
+              <label>Employer HSA Contribution / yr</label>
+              <input type="number" id="s2_hsa_match_amt" placeholder="$0" min="0" oninput="compute()">
+            </div>
+          </div>
+          <!-- HSA metrics -->
+          <div class="metrics-row">
+            <div class="metric-card">
+              <div class="m-label">HSA Limit</div>
+              <div class="m-val" id="s5_hsa_limit">—</div>
+            </div>
+            <div class="metric-card">
+              <div class="m-label">HSA Funded</div>
+              <div class="m-val" id="s5_hsa_pct">0%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HSA eligibility toggle — always visible -->
+        <div class="step-inputs-grid" style="margin-top:8px;">
+          <div class="step-input-field">
+            <label>Have HSA-Eligible Plan?</label>
+            <select id="s5_has_hsa" oninput="compute()">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── STEP 6: Max Retirement ─── -->
+  <div class="scorecard" id="card6">
+    <div class="scorecard-header" onclick="toggleCard(6)">
+      <div class="step-badge" id="badge6">6</div>
+      <div class="step-icon">🏆</div>
+      <div class="step-info">
+        <div class="step-title">Max Retirement Accounts</div>
+        <div class="step-subtitle">Max 401k / 403b / 457</div>
+      </div>
+      <div class="step-bar-wrap">
+        <div class="step-bar-labels">
+          <span>Retirement Maxed</span>
+          <span id="bar6_pct">0%</span>
+        </div>
+        <div class="step-bar-track">
+          <div class="bar-seg complete" id="bar6_c" style="width:0%"></div>
+          <div class="bar-seg automated" id="bar6_a" style="width:0%"></div>
+          <div class="bar-seg planned" id="bar6_p" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="step-status-chip chip-none" id="chip6">Not Started</div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="scorecard-body">
+      <div class="card-body-inner">
+        <div class="card-description">
+          Now max out your employer-sponsored retirement plan (401k, 403b, or 457). The IRS limit includes catch-up contributions if you're 50+. This is in addition to whatever you contributed to capture the match in Step 2.
+        </div>
+        <div style="font-size:12px;color:var(--gray-600);background:var(--off-white);padding:10px 14px;border-radius:8px;" id="s6_limits_display">
+          Loading limits...
+        </div>
+        <div class="step-inputs-grid">
+          <div class="step-input-field">
+            <label>Account Type</label>
+            <select id="s6_acct_type" oninput="compute()">
+              <option value="401k">401(k)</option>
+              <option value="403b">403(b)</option>
+              <option value="457">457(b)</option>
+              <option value="sep">SEP IRA</option>
+              <option value="simple">SIMPLE IRA</option>
+            </select>
+          </div>
+          <!-- Override input mode: shown when no Step 2 match to inherit from -->
+          <div class="step-input-field" id="s6_override_mode_row" style="display:none;">
+            <label>Enter Contribution As</label>
+            <select id="s6_input_mode" oninput="state.s6_manuallySet=true;compute()">
+              <option value="dollar">Dollar Amount ($)</option>
+              <option value="percent">Percentage of Income (%)</option>
+            </select>
+          </div>
+          <div class="step-input-field" id="s6_pct_input_row" style="display:none;">
+            <label>Contribution % of Income</label>
+            <input type="number" id="s6_contrib_pct_override" placeholder="e.g. 10" min="0" max="100" step="0.1" oninput="state.s6_manuallySet=true;compute()">
+          </div>
+          <div class="step-input-field">
+            <label>Annual Employee Contribution</label>
+            <input type="number" id="s6_contrib" placeholder="$0" min="0" oninput="state.s6_manuallySet=true;state.s6_userTyped=true;compute()">
+          </div>
+          <div class="step-input-field">
+            <label>Contribution Method</label>
+            <select id="s6_method" oninput="state.s6_methodManuallySet=true;compute()">
+              <option value="none">Not Contributing</option>
+              <option value="planned">Planned</option>
+              <option value="auto">Automated (payroll)</option>
+              <option value="complete">Complete</option>
+            </select>
+          </div>
+        </div>
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="m-label">IRS Limit (2026)</div>
+            <div class="m-val" id="s6_limit">$23,500</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Your Contribution</div>
+            <div class="m-val" id="s6_contrib_display">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">% of Limit</div>
+            <div class="m-val" id="s6_pct_limit">0%</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Remaining to Max</div>
+            <div class="m-val bad" id="s6_remaining">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── STEP 7: Hyper-Accumulation ─── -->
+  <div class="scorecard" id="card7">
+    <div class="scorecard-header" onclick="toggleCard(7)">
+      <div class="step-badge" id="badge7">7</div>
+      <div class="step-icon">🚀</div>
+      <div class="step-info">
+        <div class="step-title">Hyper-Accumulation</div>
+        <div class="step-subtitle">25% savings rate target</div>
+      </div>
+      <div class="step-bar-wrap">
+        <div class="step-bar-labels">
+          <span>Savings Rate</span>
+          <span id="bar7_pct">0%</span>
+        </div>
+        <div class="step-bar-track">
+          <div class="bar-seg complete" id="bar7_c" style="width:0%"></div>
+          <div class="bar-seg automated" id="bar7_a" style="width:0%"></div>
+          <div class="bar-seg planned" id="bar7_p" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="step-status-chip chip-none" id="chip7">Not Started</div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="scorecard-body">
+      <div class="card-body-inner">
+        <div class="card-description">
+          The Money Guy goal: save 25% of gross income. For most households this includes the employer match. Once income crosses $200k, use the stricter standard and count only what you personally contribute.
+        </div>
+        <div class="step-inputs-grid">
+          <div class="step-input-field">
+            <label>Additional Taxable Savings / mo</label>
+            <input type="number" id="s7_extra_savings" placeholder="$0" min="0" oninput="compute()">
+          </div>
+          <div class="step-input-field">
+            <label>Saving Method</label>
+            <select id="s7_method" oninput="compute()">
+              <option value="auto-detect">Auto-detect</option>
+              <option value="none">Cash</option>
+              <option value="planned">Planned</option>
+              <option value="auto">Automated</option>
+            </select>
+            <span id="s7_method_label" style="display:none;font-size:11px;font-weight:600;color:var(--blue);margin-top:3px;"></span>
+          </div>
+        </div>
+        <div style="padding:18px 20px;background:var(--blue-pale);border:1.5px solid var(--blue);border-radius:12px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:4px;" id="s7_rate_label">Current Savings Rate</div>
+            <div style="font-family:'DM Mono',monospace;font-size:36px;font-weight:500;color:var(--navy);" id="s7_rate_primary">0.0%</div>
+            <div style="font-size:12px;color:var(--gray-600);margin-top:4px;" id="s7_rate_sub">of 25% target</div>
+          </div>
+          <div style="flex:1;min-width:160px;">
+            <div style="height:10px;background:rgba(10,22,40,0.1);border-radius:999px;overflow:hidden;margin-bottom:8px;">
+              <div id="s7_inline_bar" style="height:100%;background:var(--blue);border-radius:999px;transition:width 0.5s;width:0%;"></div>
+            </div>
+            <div id="s7_200k_flag" style="display:none;font-size:11px;padding:8px 12px;background:var(--gold-pale);border-radius:7px;border-left:3px solid var(--gold-light);color:#92400e;">
+              ⚠️ Income &gt; $200k — employer match excluded from your rate.
+            </div>
+          </div>
+        </div>
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="m-label">Total Annual Savings</div>
+            <div class="m-val" id="s7_total_savings">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Employer Match</div>
+            <div class="m-val good" id="s7_match">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Gap to 25%</div>
+            <div class="m-val bad" id="s7_gap">$0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── STEP 8: Prepay Low-Interest Debt ─── -->
+  <div class="scorecard" id="card8">
+    <div class="scorecard-header" onclick="toggleCard(8)">
+      <div class="step-badge" id="badge8">8</div>
+      <div class="step-icon">🏠</div>
+      <div class="step-info">
+        <div class="step-title">Prepay Low-Interest Debt</div>
+        <div class="step-subtitle">Mortgage, student loans &amp; low-interest debt</div>
+      </div>
+      <div class="step-bar-wrap">
+        <div class="step-bar-labels">
+          <span>Progress</span>
+          <span id="bar8_pct">0%</span>
+        </div>
+        <div class="step-bar-track">
+          <div class="bar-seg complete" id="bar8_c" style="width:0%"></div>
+          <div class="bar-seg automated" id="bar8_a" style="width:0%"></div>
+          <div class="bar-seg planned" id="bar8_p" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="step-status-chip chip-none" id="chip8">Not Started</div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="scorecard-body">
+      <div class="card-body-inner">
+        <div class="card-description">
+          With wealth-building locked in, focus on eliminating low-interest debt (mortgages, student loans, auto loans below the age-adjusted threshold). Debts entered in Step 3 that weren't flagged as high-interest automatically appear here at minimum payment. Add extra payments or additional goals below.
+        </div>
+        <div id="s8_goals_list"></div>
+        <button class="btn-add" onclick="addGoal(8)">+ Add Debt / Goal</button>
+        <div class="metrics-row" style="margin-top:12px;">
+          <div class="metric-card">
+            <div class="m-label">Goals Defined</div>
+            <div class="m-val" id="s8_goals_count">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Goals Completed</div>
+            <div class="m-val good" id="s8_goals_done">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Total Extra / mo</div>
+            <div class="m-val" id="s8_extra_total">$0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── STEP 9: Beyond the Basics ─── -->
+  <div class="scorecard" id="card9">
+    <div class="scorecard-header" onclick="toggleCard(9)">
+      <div class="step-badge" id="badge9">9</div>
+      <div class="step-icon">🌟</div>
+      <div class="step-info">
+        <div class="step-title">Beyond the Basics</div>
+        <div class="step-subtitle">Taxable brokerage, 529s, giving</div>
+      </div>
+      <div class="step-bar-wrap">
+        <div class="step-bar-labels">
+          <span>Progress</span>
+          <span id="bar9_pct">0%</span>
+        </div>
+        <div class="step-bar-track">
+          <div class="bar-seg complete" id="bar9_c" style="width:0%"></div>
+          <div class="bar-seg automated" id="bar9_a" style="width:0%"></div>
+          <div class="bar-seg planned" id="bar9_p" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="step-status-chip chip-none" id="chip9">Not Started</div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="scorecard-body">
+      <div class="card-body-inner">
+        <div class="card-description">
+          You've done it all — now build generational wealth. Taxable brokerage accounts, 529 college savings, real estate, charitable giving, and legacy planning all live here. Define your goals and track progress.
+        </div>
+        <div id="s9_goals_list"></div>
+        <button class="btn-add" onclick="addGoal(9)">+ Add Goal</button>
+        <div class="metrics-row" style="margin-top:12px;">
+          <div class="metric-card">
+            <div class="m-label">Goals Defined</div>
+            <div class="m-val" id="s9_goals_count">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="m-label">Goals Completed</div>
+            <div class="m-val good" id="s9_goals_done">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-content -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<script>
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let state = {
+  deductibles: [],
+  debts: [],
+  goals8: [],
+  goals9: [],
+  s1_confirmed: null, // null = not answered, 'yes' = has policies, 'skip' = no deductibles
+  s2_confirmed: null,
+  s3_confirmed: null,
+  s6_manuallySet: false,
+  s6_methodManuallySet: false,
+  s6_userTyped: false,  // true only when user directly typed in the s6_contrib box
+};
+
+// IRS limits 2025
+function getIRSLimits(age) {
+  const catchUp50 = age >= 50;   // Roth IRA & 401k catch-up
+  const catchUp55 = age >= 55;   // HSA catch-up
+  const superCatchUp = age >= 60 && age <= 63; // 401k super catch-up
+  return {
+    roth:       catchUp50 ? 8600 : 7500,          // 2026: $7,500 base, $8,600 with 50+ catch-up
+    hsa_single: catchUp55 ? 5400 : 4400,          // 2026: $4,400 + $1,000 catch-up at 55+
+    hsa_family: catchUp55 ? 9750 : 8750,          // 2026: $8,750 + $1,000 catch-up at 55+
+    k401:       superCatchUp ? 34750 : catchUp50 ? 31000 : 23500, // 2026: unchanged
+    simple:     catchUp50 ? 17600 : 16500,        // 2026: unchanged
+    sep_max:    70000,                             // 2026: $70,000 (up from $69,000)
+    sep_pct:    0.25,
+    roth_limit_single:  153000,  // 2026: Roth ineligible above this for single filers
+    roth_limit_married: 242000,  // 2026: Roth ineligible above this for married filers
+  };
+}
+
+// ═══════════════════════════════════════════
+// STEP CONFIRMATIONS
+// ═══════════════════════════════════════════
+function confirmStep1(hasPolicies) {
+  state.s1_confirmed = hasPolicies ? 'yes' : 'skip';
+  const detailWrap = el('s1_detail_wrap');
+  const yesBtn = el('s1_confirm_yes');
+  const skipBtn = el('s1_confirm_skip');
+  yesBtn.className = 'status-btn' + (hasPolicies ? ' active-complete' : '');
+  skipBtn.className = 'status-btn' + (!hasPolicies ? ' active-complete' : '');
+  detailWrap.style.display = hasPolicies ? 'flex' : 'none';
+  compute();
+}
+
+function confirmStep2(hasMatch) {
+  state.s2_confirmed = hasMatch ? 'yes' : 'no';
+  const confirmWrap = el('s2_confirm_wrap');
+  const detailWrap = el('s2_detail_wrap');
+  const yesBtn = el('s2_confirm_yes');
+  const noBtn = el('s2_confirm_no');
+  // Update button styles
+  yesBtn.className = 'status-btn' + (hasMatch ? ' active-complete' : '');
+  noBtn.className = 'status-btn' + (!hasMatch ? ' active-complete' : '');
+  // Show/hide detail section
+  detailWrap.style.display = hasMatch ? 'flex' : 'none';
+  compute();
+}
+
+function confirmStep3(hasDebt) {
+  state.s3_confirmed = hasDebt ? 'yes' : 'no';
+  const detailWrap = el('s3_detail_wrap');
+  const yesBtn = el('s3_confirm_yes');
+  const noBtn = el('s3_confirm_no');
+  yesBtn.className = 'status-btn' + (hasDebt ? ' active-planned' : '');
+  noBtn.className = 'status-btn' + (!hasDebt ? ' active-complete' : '');
+  detailWrap.style.display = hasDebt ? 'flex' : 'none';
+  compute();
+}
+
+
+function toggleCard(n) {
+  const card = document.getElementById('card' + n);
+  card.classList.toggle('open');
+}
+
+function scrollToCard(n) {
+  const card = document.getElementById('card' + n);
+  if (!card) return;
+  // Open the card if it's collapsed
+  if (!card.classList.contains('open')) card.classList.add('open');
+  // Account for sticky header height
+  const headerH = document.querySelector('.site-header').offsetHeight;
+  const cardTop = card.getBoundingClientRect().top + window.scrollY - headerH - 12;
+  window.scrollTo({ top: cardTop, behavior: 'smooth' });
+}
+
+// ═══════════════════════════════════════════
+// STEP 1 — DEDUCTIBLES
+// ═══════════════════════════════════════════
+function addDeductible() {
+  state.deductibles.push({ type: 'Health', name: '', deductible: 0, status: 'planned' });
+  renderDeductibles();
+  compute();
+}
+
+function renderDeductibles() {
+  const tbody = document.getElementById('s1_body');
+  const cash = val('m_cash');
+  const highest = Math.max(0, ...state.deductibles.map(d => Number(d.deductible) || 0));
+  tbody.innerHTML = '';
+  state.deductibles.forEach((d, i) => {
+    const ded = Number(d.deductible) || 0;
+    const isCovered = cash >= ded && ded > 0;
+    const isHighest = ded === highest && highest > 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><select>
+        ${['Health','Dental','Vision','Auto','Home/Renters','Life','Umbrella','Other'].map(t => `<option value="${t}" ${d.type===t?'selected':''}>${t}</option>`).join('')}
+      </select></td>
+      <td><input type="text" value="${d.name}" placeholder="e.g. Blue Cross PPO"></td>
+      <td>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" value="${ded||''}" placeholder="0" style="width:90px;">
+        ${isHighest ? '<span class="highest-badge">Highest</span>' : ''}
+      </td>
+      <td>
+        <select class="status-override">
+          <option value="auto" ${d.statusOverride==='auto'?'selected':''}>Automated</option>
+          <option value="planned" ${d.statusOverride==='planned'?'selected':''}>Planned</option>
+          <option value="auto-default" ${(!d.statusOverride)?'selected':''}>Auto-detect</option>
+        </select>
+        <span style="font-size:11px;color:${isCovered?'var(--green)':'var(--red)'};">
+          ${isCovered ? '✓ Covered' : (ded > 0 ? '✗ Shortfall' : '')}
+        </span>
+      </td>
+      <td><button class="btn-del">✕</button></td>
+    `;
+    tr.querySelector('select').addEventListener('change', e => { state.deductibles[i].type = e.target.value; compute(); });
+    tr.querySelectorAll('input[type=text]')[0].addEventListener('change', e => { state.deductibles[i].name = e.target.value; });
+    const dedInput = tr.querySelector('input[inputmode=numeric]');
+    dedInput.addEventListener('change', e => { state.deductibles[i].deductible = Number(e.target.value.replace(/[^0-9.]/g,'')); renderDeductibles(); compute(); });
+    dedInput.addEventListener('blur', e => { state.deductibles[i].deductible = Number(e.target.value.replace(/[^0-9.]/g,'')); renderDeductibles(); compute(); });
+    tr.querySelector('.status-override').addEventListener('change', e => { state.deductibles[i].statusOverride = e.target.value === 'auto-default' ? null : e.target.value; compute(); });
+    tr.querySelector('.btn-del').addEventListener('click', () => { state.deductibles.splice(i, 1); renderDeductibles(); compute(); });
+    tbody.appendChild(tr);
+  });
+}
+
+// ═══════════════════════════════════════════
+// STEP 3 — HIGH INTEREST DEBT
+// ═══════════════════════════════════════════
+function isHighInterest(debtType, rate, age) {
+  const r = Number(rate) || 0;
+  if (r === 0) return false;
+  switch (debtType) {
+    case 'Credit Card':
+      return true; // always high interest regardless of age
+    case 'Student Loan':
+      if (age < 30)      return r >= 6;  // 20s: 6%+
+      else if (age < 40) return r >= 5;  // 30s: 5%+
+      else               return r >= 4;  // 40s+: 4%+
+    case 'Auto':
+      if (age < 30)      return r >= 10; // 20s: 10%+
+      else if (age < 40) return r >= 9;  // 30s: 9%+
+      else               return r >= 8;  // 40s+: 8%+
+    default:
+      return r >= 6; // Personal Loan, Medical, Other
+  }
+}
+
+function addDebt() {
+  state.debts.push({ name: '', type: 'Credit Card', balance: 0, rate: 0, minPayment: 0, status: 'planned' });
+  renderDebts();
+  compute();
+}
+
+function renderDebts() {
+  const age = val('m_age');
+  const tbody = document.getElementById('s3_body');
+  tbody.innerHTML = '';
+  state.debts.forEach((d, i) => {
+    const hi = isHighInterest(d.type, d.rate, age);
+    const tr = document.createElement('tr');
+    if (hi) tr.style.background = 'rgba(220,38,38,0.04)';
+    tr.innerHTML = `
+      <td><input type="text" value="${d.name||''}" placeholder="e.g. Chase Sapphire"></td>
+      <td><select>
+        ${['Credit Card','Personal Loan','Auto','Student Loan','Medical','Other'].map(t=>`<option value="${t}" ${d.type===t?'selected':''}>${t}</option>`).join('')}
+      </select></td>
+      <td><input type="text" inputmode="numeric" value="${d.balance||''}" placeholder="0" style="width:90px;"></td>
+      <td>
+        <input type="text" inputmode="numeric" value="${d.rate||''}" placeholder="0.0" style="width:70px;${hi?'color:var(--red);font-weight:700;':'color:var(--green);font-weight:600;'}">
+        ${hi ? '<span class="highest-badge" style="background:var(--red-pale);color:var(--red);">High ⚠</span>' : '<span class="highest-badge" style="background:var(--green-pale);color:var(--green);">Low ✓</span>'}
+      </td>
+      <td><input type="text" inputmode="numeric" value="${d.minPayment||''}" placeholder="0" style="width:80px;"></td>
+      <td><select>
+        <option value="planned" ${d.status==='planned'?'selected':''}>Planned</option>
+        <option value="auto"    ${d.status==='auto'?'selected':''}>Automated</option>
+        <option value="complete" ${d.status==='complete'?'selected':''}>Complete</option>
+      </select></td>
+      <td><button class="btn-del">✕</button></td>
+    `;
+    const [nameIn, typeSelect, balIn, rateIn, payIn, statusSelect, delBtn] = [
+      tr.querySelector('input[type=text]'),
+      tr.querySelector('select'),
+      tr.querySelectorAll('input[inputmode=numeric]')[0],
+      tr.querySelectorAll('input[inputmode=numeric]')[1],
+      tr.querySelectorAll('input[inputmode=numeric]')[2],
+      tr.querySelectorAll('select')[1],
+      tr.querySelector('.btn-del'),
+    ];
+    nameIn.addEventListener('input', e => { state.debts[i].name = e.target.value; });
+    typeSelect.addEventListener('change', e => { state.debts[i].type = e.target.value; renderDebts(); syncStep8Debts(); compute(); });
+    balIn.addEventListener('change', e => { state.debts[i].balance = Number(e.target.value.replace(/[^0-9.]/g,'')); syncStep8Debts(); compute(); });
+    balIn.addEventListener('blur',   e => { state.debts[i].balance = Number(e.target.value.replace(/[^0-9.]/g,'')); syncStep8Debts(); compute(); });
+    rateIn.addEventListener('change', e => { state.debts[i].rate = Number(e.target.value.replace(/[^0-9.]/g,'')); renderDebts(); syncStep8Debts(); compute(); });
+    rateIn.addEventListener('blur',   e => { state.debts[i].rate = Number(e.target.value.replace(/[^0-9.]/g,'')); renderDebts(); syncStep8Debts(); compute(); });
+    payIn.addEventListener('change', e => { state.debts[i].minPayment = Number(e.target.value.replace(/[^0-9.]/g,'')); syncStep8Debts(); compute(); });
+    payIn.addEventListener('blur',   e => { state.debts[i].minPayment = Number(e.target.value.replace(/[^0-9.]/g,'')); syncStep8Debts(); compute(); });
+    statusSelect.addEventListener('change', e => { state.debts[i].status = e.target.value; compute(); });
+    delBtn.addEventListener('click', () => { state.debts.splice(i,1); renderDebts(); syncStep8Debts(); compute(); });
+    tbody.appendChild(tr);
+  });
+}
+
+// ═══════════════════════════════════════════
+// STEP 8 — SYNC LOW-INTEREST DEBTS FROM STEP 3
+// ═══════════════════════════════════════════
+function syncStep8Debts() {
+  const age = val('m_age');
+  // Low-interest debts from step 3 = not high-interest
+  const loDebts = state.debts.filter(d => !isHighInterest(d.type, d.rate, age) && (Number(d.balance)||0) > 0);
+  // Remove any auto-synced goals that no longer exist in step 3
+  state.goals8 = state.goals8.filter(g => !g.fromStep3);
+  // Add/update from step 3
+  loDebts.forEach(d => {
+    state.goals8.push({
+      label: d.name || d.type,
+      detail: `${d.type} @ ${d.rate}%`,
+      amount: Number(d.minPayment) || 0,
+      method: d.status === 'auto' ? 'auto' : 'planned',
+      done: d.status === 'complete',
+      fromStep3: true,
+      debtBalance: Number(d.balance) || 0,
+    });
+  });
+  renderGoals(8);
+}
+
+// ═══════════════════════════════════════════
+// STEPS 8 & 9 — GOAL ITEMS
+// ═══════════════════════════════════════════
+function addGoal(step) {
+  const arr = step === 8 ? state.goals8 : state.goals9;
+  arr.push({ label: '', detail: '', amount: 0, method: 'planned', done: false, fromStep3: false });
+  renderGoals(step);
+  compute();
+}
+
+// Fix for arrow function scoping in innerHTML — use direct references
+function addGoalItem(step, i, field, value) {
+  if (step === 8) state.goals8[i][field] = value;
+  else state.goals9[i][field] = value;
+  compute();
+}
+
+// Re-render goals with proper event handlers
+function renderGoals(step) {
+  const arr = step === 8 ? state.goals8 : state.goals9;
+  const container = document.getElementById(`s${step}_goals_list`);
+  if (!arr.length) {
+    container.innerHTML = `<p style="font-size:13px;color:var(--gray-400);padding:8px 0;">No goals added yet.</p>`;
+    return;
+  }
+  container.innerHTML = '';
+  arr.forEach((g, i) => {
+    const div = document.createElement('div');
+    const isImported = !!g.fromStep3;
+    div.className = 'goal-item' + (g.done ? ' checked' : '');
+    if (isImported) div.style.borderColor = 'var(--blue-light)';
+    div.innerHTML = `
+      <input type="checkbox" ${g.done?'checked':''}>
+      <div class="goal-item-content">
+        <input type="text" value="${(g.label||'').replace(/"/g,'&quot;')}" placeholder="Goal name" style="flex:2;min-width:140px;">
+        <input type="text" value="${(g.detail||'').replace(/"/g,'&quot;')}" placeholder="Notes" style="flex:1.5;min-width:100px;${isImported?'background:var(--off-white);color:var(--gray-600);':''}"  ${isImported?'readonly':''}>
+        ${g.debtBalance ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--navy);white-space:nowrap;padding:5px 8px;background:var(--off-white);border-radius:6px;border:1px solid var(--gray-200);">Bal: $${Math.round(g.debtBalance).toLocaleString()}</span>` : ''}
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:80px;">
+          <span style="font-size:9px;font-weight:600;text-transform:uppercase;color:var(--gray-400);letter-spacing:0.5px;">${isImported?'Min Pmt/mo':'$/mo'}</span>
+          <input type="number" value="${g.amount||''}" placeholder="0" min="0" style="width:80px;padding:5px 8px;border:1.5px solid var(--gray-200);border-radius:6px;font-size:13px;">
+        </div>
+        <select style="flex:1;min-width:110px;padding:5px 8px;border:1.5px solid var(--gray-200);border-radius:6px;font-size:12px;">
+          <option value="planned" ${g.method==='planned'?'selected':''}>Planned</option>
+          <option value="auto"    ${g.method==='auto'?'selected':''}>Automated</option>
+          <option value="complete" ${g.method==='complete'?'selected':''}>Complete</option>
+        </select>
+        ${isImported ? '<span style="font-size:10px;color:var(--blue);font-weight:600;white-space:nowrap;padding:4px 0;">↑ Step 3</span>' : ''}
+      </div>
+      ${!isImported ? '<button class="btn-del">✕</button>' : '<div style="width:28px;"></div>'}
+    `;
+    const chk = div.querySelector('input[type=checkbox]');
+    const labelIn = div.querySelectorAll('input[type=text]')[0];
+    const detailIn = div.querySelectorAll('input[type=text]')[1];
+    const amtIn = div.querySelector('input[type=number]');
+    const methodSel = div.querySelector('select');
+    const delBtn = div.querySelector('.btn-del');
+
+    chk.addEventListener('change', () => { arr[i].done = chk.checked; renderGoals(step); compute(); });
+    labelIn.addEventListener('input', () => { arr[i].label = labelIn.value; });
+    if (detailIn && !isImported) detailIn.addEventListener('input', () => { arr[i].detail = detailIn.value; });
+    amtIn.addEventListener('input', () => { arr[i].amount = Number(amtIn.value); compute(); });
+    methodSel.addEventListener('change', () => { arr[i].method = methodSel.value; compute(); });
+    if (delBtn) delBtn.addEventListener('click', () => { arr.splice(i,1); renderGoals(step); compute(); });
+    container.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════
+// ROTH REACTIVE METHOD FLIP
+// ═══════════════════════════════════════════
+function onRothInput(contribId, methodId) {
+  const amount = Number(el(contribId).value) || 0;
+  const sel = el(methodId);
+  const cur = sel.value;
+  if (amount === 0 && cur !== 'none') {
+    // Flip back to Not Contributing if user clears the field
+    sel.value = 'none';
+  } else if (amount > 0 && cur === 'none') {
+    // First time a number is entered — flip to Planned
+    sel.value = 'planned';
+  }
+  // If already planned/auto/complete, leave it alone
+}
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function fmt(n) {
+  if (isNaN(n) || n === null) return '—';
+  return '$' + Math.round(n).toLocaleString();
+}
+function fmtPct(n) {
+  if (isNaN(n) || n === null) return '—';
+  return n.toFixed(1) + '%';
+}
+function setBar(step, complete, automated, planned) {
+  const c = Math.max(0, Math.min(100, complete));
+  const a = Math.max(0, Math.min(100 - c, automated));
+  const p = Math.max(0, Math.min(100 - c - a, planned));
+  document.getElementById(`bar${step}_c`).style.width = c + '%';
+  document.getElementById(`bar${step}_a`).style.width = a + '%';
+  document.getElementById(`bar${step}_p`).style.width = p + '%';
+  const total = c + a + p;
+  document.getElementById(`bar${step}_pct`).textContent = Math.round(total) + '%';
+  return total;
+}
+function setChip(step, status) {
+  const chip = document.getElementById(`chip${step}`);
+  const badge = document.getElementById(`badge${step}`);
+  chip.className = 'step-status-chip';
+  badge.className = 'step-badge';
+  if (status === 'complete') {
+    chip.classList.add('chip-complete'); chip.textContent = '✓ Complete';
+    badge.classList.add('complete');
+  } else if (status === 'automated') {
+    chip.classList.add('chip-automated'); chip.textContent = '⚙ Automated';
+    badge.classList.add('automated');
+  } else if (status === 'partial') {
+    chip.classList.add('chip-planned'); chip.textContent = '↗ In Progress';
+    badge.classList.add('partial');
+  } else {
+    chip.classList.add('chip-none'); chip.textContent = 'Not Started';
+  }
+}
+function setPip(step, status) {
+  // Status collection only — actual rendering done by applyPips() at end of compute
+}
+function applyPips(stepStatuses) {
+  // Sequential chain rule:
+  // - 'complete' or 'automated' → pip colors blue, chain continues fully
+  // - 'partial' (100% planned OR 100% automated in-progress) → pip colors yellow,
+  //    AND the NEXT step's pip is allowed to show (but no further)
+  // - 'none' (not started) → pip stays blank, chain breaks, all subsequent stay blank
+  let chainBroken = false;
+  let prevWasPartial = false;
+
+  for (let i = 0; i < 9; i++) {
+    const pip = document.getElementById(`pip${i + 1}`);
+    pip.className = 'foo-step-pip';
+    const status = stepStatuses[i];
+    const isDone = status === 'complete' || status === 'automated';
+    const isPartial = status === 'partial';
+
+    if (!chainBroken) {
+      if (isDone) {
+        pip.classList.add('complete'); // blue for complete/automated
+        prevWasPartial = false;
+      } else if (isPartial) {
+        pip.classList.add('partial'); // yellow for in-progress
+        prevWasPartial = true;
+        chainBroken = true; // stops coloring steps BEYOND the one after this
+      } else {
+        // 'none' — if previous was partial, allow this one pip to show uncolored but don't break
+        // Actually for 'none': chain breaks here
+        chainBroken = true;
+        prevWasPartial = false;
+      }
+    } else if (prevWasPartial) {
+      // The step immediately after a partial step gets to show its own status
+      if (isDone) pip.classList.add('complete');
+      else if (isPartial) pip.classList.add('partial');
+      // else stays blank
+      prevWasPartial = false; // only one step lookahead
+    }
+    // Otherwise: stays plain uncolored
+  }
+}
+function el(id) { return document.getElementById(id); }
+function val(id) { return Number(el(id).value) || 0; }
+function strval(id) { return el(id).value; }
+
+// ═══════════════════════════════════════════
+// MAIN COMPUTE
+// ═══════════════════════════════════════════
+function compute() {
+  const age = val('m_age');
+  const income = val('m_income');
+  const cash = val('m_cash');
+  const monthlyExp = val('m_monthly_exp');
+  const limits = getIRSLimits(age);
+  const stepScores = [];
+  const pipStatuses = new Array(9).fill('none'); // track each step's status for sequential pip coloring
+
+  // Re-render debt table so age-based thresholds stay current, then sync low-interest to Step 8
+  if (state.debts.length > 0) { renderDebts(); syncStep8Debts(); }
+
+  // ── STEP 1: Deductibles ──
+  {
+    const confirmed = state.s1_confirmed; // null | 'yes' | 'skip'
+    const highDed = Math.max(0, ...state.deductibles.map(d => Number(d.deductible)||0));
+    let complPct=0, autoPct=0, planPct=0, chipStatus='none';
+
+    if (confirmed === 'skip') {
+      // User confirmed no deductibles — auto-complete
+      complPct = 100; chipStatus = 'complete';
+    } else if (confirmed === 'yes') {
+      if (state.deductibles.length === 0 || highDed === 0) {
+        // Opened but no policies entered yet
+        chipStatus = 'partial';
+      } else {
+        const ratio = Math.min(1, cash / highDed);
+        const hasAutoOverride = state.deductibles.some(d => d.statusOverride === 'auto');
+        const hasPlannedOverride = state.deductibles.some(d => d.statusOverride === 'planned');
+
+        if (cash >= highDed) {
+          if (hasAutoOverride) { autoPct = 100; chipStatus = 'automated'; }
+          else { complPct = 100; chipStatus = 'complete'; }
+        } else {
+          if (hasAutoOverride) { autoPct = ratio * 100; chipStatus = 'partial'; }
+          else if (hasPlannedOverride) { planPct = ratio * 100; chipStatus = 'partial'; }
+          else { complPct = ratio * 100; chipStatus = 'partial'; }
+        }
+      }
+    }
+    // confirmed === null → stays 'none' / Not Started
+
+    const total = setBar(1, complPct, autoPct, planPct);
+    setChip(1, chipStatus);
+    setPip(1, chipStatus); pipStatuses[1-1] = chipStatus;
+    stepScores.push(confirmed === null ? 0 : total);
+
+    el('s1_cash_val').textContent = fmt(cash);
+    el('s1_high_ded').textContent = highDed > 0 ? fmt(highDed) : (confirmed === 'skip' ? 'Skipped' : '—');
+    const ratioEl = el('s1_ratio');
+    ratioEl.textContent = confirmed === 'skip' ? 'N/A' : highDed > 0 ? (cash/highDed).toFixed(2)+'x' : '—';
+    ratioEl.className = 'm-val' + (confirmed === 'skip' ? ' good' : cash >= highDed && highDed > 0 ? ' good' : highDed > 0 ? ' bad' : '');
+  }
+
+  // ── STEP 2: Employer Match ── requires confirmation first
+  let matchAmt = 0, s2ContribAmt = 0;
+  {
+    const confirmed = state.s2_confirmed;
+    const matchPct = val('s2_match_pct') / 100;
+    const contribPct = val('s2_contrib_pct') / 100;
+    const matchType = Number(strval('s2_match_type')) / 100;
+    const method = strval('s2_method');
+    const employerHSAMatch = val('s2_hsa_match_amt');
+
+    s2ContribAmt = income * contribPct;
+    const maxMatchableContrib = income * matchPct;
+    const actualContribForMatch = Math.min(s2ContribAmt, maxMatchableContrib);
+    const retirementMatch = actualContribForMatch * matchType;
+    matchAmt = retirementMatch + employerHSAMatch;
+
+    const maxPossibleMatch = income * matchPct * matchType;
+    const captured = maxPossibleMatch > 0 ? Math.min(1, retirementMatch / maxPossibleMatch) : 0;
+    const missed = maxPossibleMatch - retirementMatch;
+
+    let complPct=0, autoPct=0, planPct=0, chipStatus='none';
+
+    if (confirmed === 'no') {
+      complPct = 100; chipStatus = 'complete';
+      matchAmt = 0;
+    } else if (confirmed === 'yes') {
+      if (captured >= 1) {
+        // Employer match always comes via payroll — always automated
+        autoPct = 100; chipStatus = 'automated';
+      } else if (captured > 0) {
+        autoPct = captured * 100;
+        chipStatus = 'partial';
+      } else {
+        chipStatus = 'partial';
+      }
+    }
+
+    const total = setBar(2, complPct, autoPct, planPct);
+    setChip(2, chipStatus);
+    // FOO pip: automated payroll = green (automated), fully captured manually = blue (complete)
+    setPip(2, chipStatus); pipStatuses[2-1] = chipStatus;
+    stepScores.push(confirmed === null ? 0 : total);
+
+    if (el('s2_my_contrib')) el('s2_my_contrib').textContent = fmt(s2ContribAmt);
+    if (el('s2_match_amt')) el('s2_match_amt').textContent = fmt(retirementMatch);
+    if (el('s2_captured')) el('s2_captured').textContent = fmtPct(captured * 100);
+    const missEl = el('s2_missed');
+    if (missEl) { missEl.textContent = fmt(missed); missEl.className = 'm-val' + (missed > 0 ? ' bad' : ' good'); }
+  }
+
+  // ── STEP 3: High Interest Debt ── requires confirmation first
+  let hiDebtTotal = 0, loDebtTotal = 0;
+  {
+    const confirmed = state.s3_confirmed;
+    const hiDebts = state.debts.filter(d => isHighInterest(d.type, d.rate, age));
+    const loDebts = state.debts.filter(d => !isHighInterest(d.type, d.rate, age));
+    hiDebtTotal = hiDebts.reduce((s,d) => s + (Number(d.balance)||0), 0);
+    loDebtTotal = loDebts.reduce((s,d) => s + (Number(d.balance)||0), 0);
+    const totalDebt = state.debts.reduce((s,d) => s + (Number(d.balance)||0), 0);
+
+    let complPct=0, autoPct=0, planPct=0, chipStatus='none';
+
+    if (confirmed === 'no') {
+      complPct = 100; chipStatus = 'complete';
+    } else if (confirmed === 'yes') {
+      if (state.debts.length === 0 || hiDebtTotal === 0) {
+        complPct = 100; chipStatus = 'complete';
+      } else {
+        const autoDebts    = hiDebts.filter(d=>d.status==='auto').reduce((s,d)=>s+(Number(d.balance)||0),0);
+        const plannedDebts = hiDebts.filter(d=>d.status==='planned').reduce((s,d)=>s+(Number(d.balance)||0),0);
+        const complDebts   = hiDebts.filter(d=>d.status==='complete').reduce((s,d)=>s+(Number(d.balance)||0),0);
+        const origTotal = hiDebtTotal + complDebts;
+        if (origTotal > 0) {
+          complPct = (complDebts / origTotal) * 100;
+          autoPct  = (autoDebts / origTotal) * 100;
+          planPct  = (plannedDebts / origTotal) * 100;
+        }
+        // All remaining are in-progress — still partial (debt not eliminated)
+        chipStatus = 'partial';
+      }
+    }
+
+    const total = setBar(3, complPct, autoPct, planPct);
+    setChip(3, chipStatus);
+    setPip(3, chipStatus); pipStatuses[3-1] = chipStatus;
+    stepScores.push(confirmed === null ? 0 : total);
+
+    const avgRate = hiDebts.length > 0
+      ? hiDebts.reduce((s,d)=>s+Number(d.rate),0)/hiDebts.length : 0;
+    if (el('s3_hi_total')) { el('s3_hi_total').textContent = hiDebtTotal > 0 ? fmt(hiDebtTotal) : '$0'; el('s3_hi_total').className = 'm-val' + (hiDebtTotal > 0 ? ' bad' : ' good'); }
+    if (el('s3_avg_rate')) el('s3_avg_rate').textContent = hiDebts.length > 0 ? fmtPct(avgRate) : '—';
+    if (el('s3_status_val')) { el('s3_status_val').textContent = confirmed === 'no' ? 'None ✓' : hiDebtTotal === 0 ? (state.debts.length ? 'All Clear ✓' : '—') : `${fmt(hiDebtTotal)} remaining`; el('s3_status_val').className = 'm-val' + (confirmed === 'no' || (hiDebtTotal === 0 && state.debts.length) ? ' good' : hiDebtTotal > 0 ? ' bad' : ''); }
+
+    el('m_total_debt').textContent = fmt(totalDebt);
+  }
+
+  // ── STEP 4: Emergency Reserves ──
+  {
+    const targetMonths = Number(strval('s4_target_mo'));
+    const target = monthlyExp * targetMonths;
+    const methodOverride = strval('s4_method');
+    const monthsCovered = monthlyExp > 0 ? cash / monthlyExp : 0;
+    const ratio = target > 0 ? Math.min(1, cash / target) : 0;
+    const gap = Math.max(0, target - cash);
+
+    // Auto-detect: fully funded = complete, partial cash = planned, nothing = not saving
+    // Override takes precedence if not auto-detect
+    let effectiveMethod;
+    if (methodOverride === 'auto-detect') {
+      if (ratio >= 1) effectiveMethod = 'complete';
+      else if (ratio > 0) effectiveMethod = 'planned';
+      else effectiveMethod = 'none';
+    } else {
+      effectiveMethod = methodOverride;
+    }
+
+    let complPct=0, autoPct=0, planPct=0, chipStatus='none';
+    if (target > 0) {
+      if (ratio >= 1) {
+        if (effectiveMethod === 'auto') { autoPct = 100; chipStatus = 'automated'; }
+        else { complPct = 100; chipStatus = 'complete'; }
+      } else if (ratio > 0) {
+        if (effectiveMethod === 'auto') { autoPct = ratio * 100; chipStatus = 'partial'; }
+        else if (effectiveMethod === 'planned') { planPct = ratio * 100; chipStatus = 'partial'; }
+        else { complPct = ratio * 100; chipStatus = 'partial'; }
+      } else if (effectiveMethod !== 'none') {
+        if (effectiveMethod === 'auto') autoPct = 5;
+        else planPct = 5;
+        chipStatus = 'partial';
+      }
+    }
+
+    const total = setBar(4, complPct, autoPct, planPct);
+    setChip(4, chipStatus);
+    setPip(4, chipStatus); pipStatuses[4-1] = chipStatus;
+    stepScores.push(total);
+
+    // Show auto-detected method label when on auto-detect
+    if (methodOverride === 'auto-detect') {
+      const label = effectiveMethod === 'complete' ? 'Auto: Fully Funded ✓'
+                  : effectiveMethod === 'auto'     ? 'Auto: Automated'
+                  : effectiveMethod === 'planned'  ? 'Auto: Partially Funded'
+                  : 'Auto: Not Yet Funded';
+      el('s4_method_label').textContent = label;
+      el('s4_method_label').style.display = '';
+    } else {
+      el('s4_method_label').style.display = 'none';
+    }
+
+    el('s4_monthly').textContent = fmt(monthlyExp);
+    el('s4_target').textContent = fmt(target);
+    el('s4_current').textContent = fmt(cash);
+    const mcEl = el('s4_months_covered');
+    mcEl.textContent = monthlyExp > 0 ? monthsCovered.toFixed(1) : '—';
+    mcEl.className = 'm-val' + (monthsCovered >= targetMonths ? ' good' : monthsCovered >= 3 ? ' warn' : ' bad');
+    el('s4_gap').textContent = gap > 0 ? fmt(gap) : '$0 ✓';
+    el('s4_gap').className = 'm-val' + (gap === 0 ? ' good' : ' bad');
+  }
+
+  // ── STEP 5: Roth & HSA ──
+  let s5TotalContrib = 0, s5AutoContrib = 0;
+  {
+    const rothContrib = val('s5_roth_contrib');
+    const rothMethodRaw = strval('s5_roth_method');
+    const isMarried = strval('m_filing') === 'married';
+    const spouseContrib = isMarried ? val('s5_roth_spouse_contrib') : 0;
+    const spouseMethodRaw = isMarried ? strval('s5_roth_spouse_method') : 'none';
+    const hasHSA = strval('s5_has_hsa') === 'yes';
+    const hsaCoverage = hasHSA ? strval('s5_hsa_coverage') : 'self';
+    const hsaContrib = hasHSA ? val('s5_hsa_contrib') : 0;
+    const hsaMethodRaw = strval('s5_hsa_method');
+    const employerHSA = val('s2_hsa_match_amt');
+
+    // ── Roth income eligibility ──
+    // Above the income limit, Roth IRA is not available — treat as N/A (auto-complete for scoring)
+    const rothIncomeLimit = isMarried ? limits.roth_limit_married : limits.roth_limit_single;
+    const rothIneligible = income > 0 && income > rothIncomeLimit;
+
+    // Effective Roth contributions: 0 if ineligible (income too high)
+    const effectiveRothContrib   = rothIneligible ? 0 : rothContrib;
+    const effectiveSpouseContrib = rothIneligible ? 0 : spouseContrib;
+
+    // Methods: ineligible → treat as 'complete' (not applicable = counts as done)
+    const rothMethod   = rothIneligible ? 'complete' : rothMethodRaw;
+    const spouseMethod = isMarried ? (rothIneligible ? 'complete' : spouseMethodRaw) : 'none';
+    const hsaMethod    = hsaMethodRaw;
+
+    // Show/hide spouse fields
+    el('s5_spouse_roth_row').style.display = isMarried ? '' : 'none';
+    el('s5_spouse_roth_method_row').style.display = isMarried ? '' : 'none';
+    el('s5_spouse_roth_metric').style.display = isMarried ? '' : 'none';
+
+    // Show/hide entire HSA section
+    el('s5_hsa_section').style.display = hasHSA ? '' : 'none';
+
+    const rothLimit = limits.roth;
+    const hsaLimit = hsaCoverage === 'family' ? limits.hsa_family : limits.hsa_single;
+
+    const ineligibleNote = rothIneligible
+      ? ` | <span style="color:var(--gold);font-weight:600;">⚠ Income above Roth limit — Roth IRA N/A (consider Backdoor Roth)</span>`
+      : '';
+
+    el('s5_limits_display').innerHTML = `
+      <strong>2026 IRS Limits${age >= 50 ? ' (Roth catch-up: 50+)' : ''}${age >= 55 ? ' (HSA catch-up: 55+)' : ''}:</strong>
+      Roth IRA (per person): <strong>${rothIneligible ? 'N/A' : fmt(rothLimit)}</strong>
+      ${isMarried && !rothIneligible ? ` | Combined max: <strong>${fmt(rothLimit * 2)}</strong>` : ''}
+      ${hasHSA ? ` | HSA (${hsaCoverage}): <strong>${fmt(hsaLimit)}</strong>` : ''}
+      ${employerHSA > 0 ? ` | Employer HSA: <strong>${fmt(employerHSA)}</strong>` : ''}
+      ${ineligibleNote}
+    `;
+
+    // Update roth limit display cards
+    el('s5_roth_limit').textContent = rothIneligible ? 'N/A' : fmt(rothLimit);
+    el('s5_roth_spouse_limit').textContent = rothIneligible ? 'N/A' : fmt(rothLimit);
+    el('s5_hsa_limit').textContent = hasHSA ? fmt(hsaLimit) : 'N/A';
+
+    // Disable/grey out Roth contribution inputs if ineligible
+    ['s5_roth_contrib','s5_roth_spouse_contrib','s5_roth_method','s5_roth_spouse_method'].forEach(id => {
+      const el2 = el(id);
+      if (el2) {
+        el2.disabled = rothIneligible;
+        el2.style.opacity = rothIneligible ? '0.4' : '';
+        el2.title = rothIneligible ? `Income exceeds ${fmt(rothIncomeLimit)} Roth limit` : '';
+      }
+    });
+
+    const effectiveHSA = hsaContrib + employerHSA;
+    // For display pcts: ineligible Roth shows as N/A; HSA stays normal
+    const rothPct   = rothIneligible ? null : (rothLimit > 0 ? Math.min(1, effectiveRothContrib / rothLimit) : 0);
+    const spousePct = (!isMarried || rothIneligible) ? null : (rothLimit > 0 ? Math.min(1, effectiveSpouseContrib / rothLimit) : 0);
+    const hsaPct    = hasHSA && hsaLimit > 0 ? Math.min(1, effectiveHSA / hsaLimit) : null;
+
+    const rothCombinedPct = rothIneligible ? null
+      : isMarried ? ((rothPct||0) + (spousePct||0)) / 2 : rothPct;
+
+    el('s5_roth_pct').textContent = rothIneligible ? 'N/A ✓' : fmtPct((rothCombinedPct||0) * 100);
+    el('s5_roth_pct').className = 'm-val' + (rothIneligible ? ' good' : (rothCombinedPct||0) >= 1 ? ' good' : (rothCombinedPct||0) > 0 ? ' warn' : '');
+    el('s5_hsa_pct').textContent = hasHSA ? fmtPct((hsaPct||0)*100) : '0%';
+    el('s5_hsa_pct').className = 'm-val' + (!hasHSA ? '' : (hsaPct||0) >= 1 ? ' good' : (hsaPct||0) > 0 ? ' warn' : '');
+
+    // Only count actual employee contributions in savings total (not ineligible phantom)
+    s5TotalContrib = effectiveRothContrib + effectiveSpouseContrib + hsaContrib;
+    s5AutoContrib  = (rothMethod==='auto' ? effectiveRothContrib : 0)
+                   + (isMarried && spouseMethod==='auto' ? effectiveSpouseContrib : 0)
+                   + (hasHSA && hsaMethod==='auto' ? hsaContrib : 0);
+
+    // Score: ineligible Roth slots count as 100% complete (N/A = not a gap)
+    const effectivePct = (contrib, limit, method) => {
+      if (method === 'complete') return 1;        // complete or ineligible
+      return limit > 0 ? Math.min(1, contrib / limit) : 0;
+    };
+
+    let totalSlots = 1 + (isMarried ? 1 : 0) + (hasHSA ? 1 : 0);
+    let complPts = 0, autoPts = 0, planPts = 0;
+    const addPts = (pct, method) => {
+      const share = pct / totalSlots * 100;
+      if (method === 'complete') complPts += share;
+      else if (method === 'auto') autoPts += share;
+      else if (method === 'planned') planPts += share;
+    };
+    addPts(effectivePct(effectiveRothContrib, rothLimit, rothMethod), rothMethod);
+    if (isMarried) addPts(effectivePct(effectiveSpouseContrib, rothLimit, spouseMethod), spouseMethod);
+    if (hasHSA) addPts(effectivePct(effectiveHSA, hsaLimit, hsaMethod), hsaMethod);
+
+    const totalScore = complPts + autoPts + planPts;
+    const chipStatus = totalScore >= 95
+      ? (autoPts >= totalScore * 0.5 ? 'automated' : 'complete')
+      : totalScore > 5 ? 'partial' : 'none';
+
+    const total = setBar(5, complPts, autoPts, planPts);
+    setChip(5, chipStatus);
+    setPip(5, chipStatus); pipStatuses[5-1] = chipStatus;
+    stepScores.push(total);
+  }
+
+  // ── STEP 6: Max Retirement ──
+  let s6Contrib = 0;
+  {
+    const s6Input = el('s6_contrib');
+    const acctType = strval('s6_acct_type');
+    const hasMatch = state.s2_confirmed === 'yes';
+    const noMatch  = state.s2_confirmed === 'no' || state.s2_confirmed === null;
+
+    // Show override mode controls only when no match from Step 2
+    el('s6_override_mode_row').style.display = noMatch ? '' : 'none';
+    const inputMode = noMatch ? strval('s6_input_mode') : 'dollar';
+    el('s6_pct_input_row').style.display = (noMatch && inputMode === 'percent') ? '' : 'none';
+
+    // Pre-fill / sync logic:
+    // - If Step 2 has a match AND user hasn't manually typed in s6_contrib: mirror s2ContribAmt
+    // - If no match: let user drive via % or $ directly; compute dollar from %
+    if (hasMatch && !state.s6_userTyped) {
+      // Always keep in sync with Step 2 when not manually overridden
+      s6Input.value = s2ContribAmt > 0 ? Math.round(s2ContribAmt) : (s6Input.value || '');
+    } else if (noMatch && inputMode === 'percent') {
+      // Compute $ from % override
+      const pctOv = val('s6_contrib_pct_override');
+      const derived = Math.round(income * pctOv / 100);
+      s6Input.value = derived || '';
+    }
+
+    s6Contrib = val('s6_contrib');
+
+    // Inherit method from Step 2 if not manually changed
+    if (!state.s6_methodManuallySet && hasMatch) {
+      const s2method = strval('s2_method');
+      if (s2method !== 'none') el('s6_method').value = s2method;
+    }
+    const effectiveMethod = strval('s6_method');
+
+    let limit = limits.k401;
+    if (acctType === 'simple') limit = limits.simple;
+    if (acctType === 'sep') limit = Math.min(income * limits.sep_pct, limits.sep_max);
+
+    const prefillNote = hasMatch && !state.s6_userTyped && s2ContribAmt > 0
+      ? ` <span style="color:var(--blue);font-style:italic;">Synced from Step 2</span>` : '';
+
+    el('s6_limits_display').innerHTML = `
+      <strong>2026 IRS Employee Contribution Limit${age >= 50 ? ' (catch-up applied)' : ''}:</strong>
+      ${acctType.toUpperCase()}: <strong>${fmt(limit)}</strong>
+      ${(age >= 60 && age <= 63 && (acctType === '401k' || acctType === '403b')) ? ' | Ages 60–63 super catch-up: $34,750' : ''}
+      ${prefillNote}
+    `;
+    el('s6_limit').textContent = fmt(limit);
+    el('s6_contrib_display').textContent = fmt(s6Contrib);
+    const pct = limit > 0 ? Math.min(1, s6Contrib / limit) : 0;
+    el('s6_pct_limit').textContent = fmtPct(pct * 100);
+    el('s6_pct_limit').className = 'm-val' + (pct >= 1 ? ' good' : pct > 0 ? ' warn' : '');
+    el('s6_remaining').textContent = pct >= 1 ? 'Maxed ✓' : fmt(limit - s6Contrib);
+    el('s6_remaining').className = 'm-val' + (pct >= 1 ? ' good' : ' bad');
+
+    let complPct=0, autoPct=0, planPct=0;
+    if (effectiveMethod === 'auto') autoPct = pct * 100;
+    else if (effectiveMethod === 'planned') planPct = pct * 100;
+    else complPct = pct * 100;
+
+    const chipStatus6 = (pct >= 1 || effectiveMethod === 'complete')
+      ? (effectiveMethod === 'auto' ? 'automated' : 'complete')
+      : pct > 0 ? 'partial' : 'none';
+    setBar(6, complPct, autoPct, planPct);
+    setChip(6, chipStatus6);
+    setPip(6, chipStatus6); pipStatuses[6-1] = chipStatus6;
+    stepScores.push(effectiveMethod === 'complete' ? 100 : pct * 100);
+  }
+
+  // ── STEP 7: Hyper-Accumulation ──
+  {
+    const extraSavings = val('s7_extra_savings') * 12;
+    const methodOverride = strval('s7_method');
+    // s6Contrib already includes the Step 2 contribution amount (it's the same 401k money).
+    // matchAmt is the EMPLOYER's contribution — separate free money.
+    // Do NOT add s2ContribAmt separately — that would double-count the employee's 401k.
+    const totalSavings       = s6Contrib + matchAmt + s5TotalContrib + extraSavings;
+    const totalSavingsNoMatch = s6Contrib + s5TotalContrib + extraSavings;
+
+    const rateWith = income > 0 ? (totalSavings / income) * 100 : 0;
+    const rateWithout = income > 0 ? (totalSavingsNoMatch / income) * 100 : 0;
+
+    const over200k = income > 200000;
+    const primaryRate = over200k ? rateWithout : rateWith;
+    const primarySavings = over200k ? totalSavingsNoMatch : totalSavings;
+
+    el('s7_200k_flag').style.display = over200k ? '' : 'none';
+    el('s7_rate_primary').textContent = fmtPct(primaryRate);
+    el('s7_rate_label').textContent = 'Current Savings Rate';
+    el('s7_rate_sub').textContent = primaryRate >= 25 ? '✓ 25% target reached!' : `${fmtPct(primaryRate)} of 25% target`;
+
+    const barPct = Math.min(100, primaryRate / 25 * 100);
+    el('s7_inline_bar').style.width = barPct + '%';
+    el('s7_inline_bar').style.background = primaryRate >= 25 ? 'var(--green)' : primaryRate >= 15 ? 'var(--gold-light)' : 'var(--blue)';
+
+    const pct = Math.min(1, primaryRate / 25);
+
+    // Auto-detect method: look across steps 2/5/6 for payroll/automated contributions
+    let effectiveMethod;
+    if (methodOverride === 'auto-detect') {
+      const s2auto = state.s2_confirmed === 'yes' && strval('s2_method') === 'auto';
+      const s5auto = strval('s5_roth_method') === 'auto' || strval('s5_roth_spouse_method') === 'auto' || strval('s5_hsa_method') === 'auto';
+      const s6auto = strval('s6_method') === 'auto';
+      const hasAutoContrib = s2auto || s5auto || s6auto;
+      const hasAnyContrib = pct > 0;
+      if (pct >= 1)           effectiveMethod = hasAutoContrib ? 'auto' : 'complete';
+      else if (hasAnyContrib) effectiveMethod = hasAutoContrib ? 'auto' : 'planned';
+      else                    effectiveMethod = 'none';
+    } else {
+      effectiveMethod = methodOverride;
+    }
+
+    let complPct=0, autoPct=0, planPct=0;
+    if (effectiveMethod === 'auto') autoPct = pct * 100;
+    else if (effectiveMethod === 'planned') planPct = pct * 100;
+    else complPct = pct * 100;
+
+    const chipStatus = pct >= 1 ? (effectiveMethod === 'auto' ? 'automated' : 'complete') : pct > 0 ? 'partial' : 'none';
+    setBar(7, complPct, autoPct, planPct);
+    setChip(7, chipStatus);
+    setPip(7, chipStatus); pipStatuses[7-1] = chipStatus;
+    stepScores.push(pct * 100);
+
+    // Show auto-detected method label when on auto-detect
+    if (methodOverride === 'auto-detect') {
+      const label = effectiveMethod === 'auto'     ? 'Auto: Payroll detected ✓'
+                  : effectiveMethod === 'complete' ? 'Auto: Target reached ✓'
+                  : effectiveMethod === 'planned'  ? 'Auto: Savings in progress'
+                  : 'Auto: No contributions yet';
+      el('s7_method_label').textContent = label;
+      el('s7_method_label').style.display = '';
+    } else {
+      el('s7_method_label').style.display = 'none';
+    }
+
+    const gap = Math.max(0, income * 0.25 - primarySavings);
+    el('s7_total_savings').textContent = fmt(totalSavings);
+    el('s7_match').textContent = fmt(matchAmt);
+    el('s7_gap').textContent = gap > 0 ? fmt(gap) : '$0 ✓';
+    el('s7_gap').className = 'm-val' + (gap === 0 ? ' good' : ' bad');
+
+    // Update savings rate master & banner
+    el('m_savings_rate').textContent = fmtPct(primaryRate);
+    const rateEl = el('sb_rate');
+    rateEl.textContent = fmtPct(primaryRate);
+    rateEl.className = 's-val' + (primaryRate >= 25 ? ' good' : primaryRate >= 15 ? ' warn' : ' bad');
+    el('sb_annual_savings').textContent = fmt(totalSavings);
+    const gapAmt = Math.max(0, income * 0.25 - primarySavings);
+    const sbGap = el('sb_gap');
+    sbGap.textContent = gapAmt > 0 ? fmt(gapAmt) : '✓ On Target';
+    sbGap.className = 's-val' + (gapAmt === 0 ? ' good' : ' bad');
+    el('sb_note').textContent = over200k
+      ? '⚠ Income > $200k — match excluded'
+      : income > 0 ? 'Employer match included' : 'Enter income to see savings rate';
+  }
+
+  // ── STEP 8: Prepay Low-Interest Debt ──
+  {
+    const goals = state.goals8;
+    const total = goals.length;
+    const done = goals.filter(g => g.done || g.method === 'complete').length;
+    const auto = goals.filter(g => !g.done && g.method !== 'complete' && g.method === 'auto').length;
+    const planned = goals.filter(g => !g.done && g.method !== 'complete' && g.method === 'planned').length;
+    const extraTotal = goals.filter(g => !g.fromStep3).reduce((s,g) => s + (Number(g.amount)||0), 0);
+
+    let complPct=0, autoPct=0, planPct=0, chipStatus='none';
+    if (total > 0) {
+      complPct = (done / total) * 100;
+      autoPct  = (auto / total) * 100;
+      planPct  = (planned / total) * 100;
+      if (done === total)      chipStatus = 'complete';
+      else if (auto > 0)       chipStatus = 'partial';  // auto-paying but not done
+      else if (planned > 0)    chipStatus = 'partial';
+      else if (done > 0)       chipStatus = 'partial';
+      else                     chipStatus = 'none';
+    }
+
+    setBar(8, complPct, autoPct, planPct);
+    setChip(8, chipStatus);
+    setPip(8, chipStatus); pipStatuses[8-1] = chipStatus;
+    stepScores.push(total > 0 ? Math.round((done + auto * 0.5 + planned * 0.25) / total * 100) : 0);
+
+    el('s8_goals_count').textContent = total;
+    el('s8_goals_done').textContent = done;
+    el('s8_extra_total').textContent = fmt(extraTotal);
+  }
+
+  // ── STEP 9: Beyond the Basics ──
+  {
+    const goals = state.goals9;
+    const total = goals.length;
+    const done = goals.filter(g => g.done || g.method === 'complete').length;
+    const auto = goals.filter(g => !g.done && g.method !== 'complete' && g.method === 'auto').length;
+    const planned = goals.filter(g => !g.done && g.method !== 'complete' && g.method === 'planned').length;
+
+    let complPct=0, autoPct=0, planPct=0, chipStatus='none';
+    if (total > 0) {
+      complPct = (done / total) * 100;
+      autoPct  = (auto / total) * 100;
+      planPct  = (planned / total) * 100;
+      if (done === total)   chipStatus = 'complete';
+      else if (auto > 0)    chipStatus = 'partial';
+      else if (planned > 0) chipStatus = 'partial';
+      else if (done > 0)    chipStatus = 'partial';
+      else                  chipStatus = 'none';
+    }
+
+    setBar(9, complPct, autoPct, planPct);
+    setChip(9, chipStatus);
+    setPip(9, chipStatus); pipStatuses[9-1] = chipStatus;
+    stepScores.push(total > 0 ? Math.round((done + auto * 0.5 + planned * 0.25) / total * 100) : 0);
+
+    el('s9_goals_count').textContent = total;
+    el('s9_goals_done').textContent = done;
+  }
+
+  // ── GLOBAL FOO PROGRESS ──
+  applyPips(pipStatuses);
+  // Show savings rate as the top-bar percentage; turn green at 25%+ target
+  // s6Contrib covers the employee 401k (which already includes the Step 2 match contribution).
+  // matchAmt is the employer's separate contribution. Never add s2ContribAmt separately.
+  const _extraS = val('s7_extra_savings') * 12;
+  const _over200k = income > 200000;
+  const savingsRate = income > 0
+    ? Math.round(((_over200k
+        ? (s6Contrib + s5TotalContrib + _extraS)
+        : (s6Contrib + matchAmt + s5TotalContrib + _extraS))
+      / income) * 100)
+    : 0;
+  const pctEl = el('fooTotalPct');
+  pctEl.textContent = savingsRate + '%';
+  pctEl.style.color = savingsRate >= 25 ? 'var(--green-light)' : 'var(--gold-light)';
+}
+
+// ═══════════════════════════════════════════
+// PERSIST
+// ═══════════════════════════════════════════
+function gatherFormState() {
+  return {
+    m_age: el('m_age').value,
+    m_income: el('m_income').value,
+    m_monthly_exp: el('m_monthly_exp').value,
+    m_cash: el('m_cash').value,
+    m_filing: strval('m_filing'),
+    s2_match_pct: el('s2_match_pct').value,
+    s2_contrib_pct: el('s2_contrib_pct').value,
+    s2_match_type: strval('s2_match_type'),
+    s2_method: strval('s2_method'),
+    s2_hsa_match_amt: el('s2_hsa_match_amt').value,
+    s2_confirmed: state.s2_confirmed,
+    s3_confirmed: state.s3_confirmed,
+    s1_confirmed: state.s1_confirmed,
+    s4_target_mo: strval('s4_target_mo'),
+    s4_method: strval('s4_method'),
+    s5_roth_contrib: el('s5_roth_contrib').value,
+    s5_roth_method: strval('s5_roth_method'),
+    s5_roth_spouse_contrib: el('s5_roth_spouse_contrib').value,
+    s5_roth_spouse_method: strval('s5_roth_spouse_method'),
+    s5_has_hsa: strval('s5_has_hsa'),
+    s5_hsa_coverage: strval('s5_hsa_coverage'),
+    s5_hsa_contrib: el('s5_hsa_contrib').value,
+    s5_hsa_method: strval('s5_hsa_method'),
+    s6_contrib: el('s6_contrib').value,
+    s6_contrib_pct_override: el('s6_contrib_pct_override').value,
+    s6_method: strval('s6_method'),
+    s6_acct_type: strval('s6_acct_type'),
+    s6_input_mode: strval('s6_input_mode'),
+    s6_manuallySet: state.s6_manuallySet,
+    s6_methodManuallySet: state.s6_methodManuallySet,
+    s6_userTyped: state.s6_userTyped,
+    s7_extra_savings: el('s7_extra_savings').value,
+    s7_method: strval('s7_method'),
+    deductibles: state.deductibles,
+    debts: state.debts,
+    goals8: state.goals8,
+    goals9: state.goals9,
+  };
+}
+
+function restoreFormState(data) {
+  const setV = (id, v) => { if (el(id) && v !== undefined) el(id).value = v; };
+  ['m_age','m_income','m_monthly_exp','m_cash',
+   's2_match_pct','s2_contrib_pct','s2_hsa_match_amt',
+   's5_roth_contrib','s5_roth_spouse_contrib','s5_hsa_contrib',
+   's6_contrib','s7_extra_savings'].forEach(id => setV(id, data[id]));
+  ['m_filing','s2_match_type','s2_method','s4_target_mo','s4_method',
+   's5_roth_method','s5_roth_spouse_method','s5_has_hsa','s5_hsa_coverage','s5_hsa_method',
+   's6_method','s6_acct_type','s6_input_mode','s7_method']
+    .forEach(id => { if (el(id) && data[id] !== undefined) el(id).value = data[id]; });
+  if (data.s6_manuallySet !== undefined) state.s6_manuallySet = data.s6_manuallySet;
+  if (data.s6_methodManuallySet !== undefined) state.s6_methodManuallySet = data.s6_methodManuallySet;
+  if (data.s6_userTyped !== undefined) state.s6_userTyped = data.s6_userTyped;
+  if (data.s6_contrib_pct_override) setV('s6_contrib_pct_override', data.s6_contrib_pct_override);
+  if (data.deductibles) { state.deductibles = data.deductibles; renderDeductibles(); }
+  if (data.debts) { state.debts = data.debts; renderDebts(); syncStep8Debts(); }
+  else { renderGoals(8); }
+  if (data.goals9) { state.goals9 = data.goals9; renderGoals(9); }
+  if (data.s2_confirmed) confirmStep2(data.s2_confirmed === 'yes');
+  if (data.s3_confirmed) confirmStep3(data.s3_confirmed === 'yes');
+  if (data.s1_confirmed) confirmStep1(data.s1_confirmed === 'yes');
+  compute();
+}
+
+function saveData() {
+  const data = gatherFormState();
+  localStorage.setItem('foo_calculator', JSON.stringify(data));
+  const d = new Date(); d.setTime(d.getTime() + 30*24*60*60*1000);
+  document.cookie = `foo_calculator=${encodeURIComponent(JSON.stringify(data))};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+  el('btn_clear').style.display = '';
+  showToast('✓ Saved to local storage & cookie');
+}
+
+function clearData() {
+  if (!confirm('Clear all saved data? This cannot be undone.')) return;
+  localStorage.removeItem('foo_calculator');
+  document.cookie = 'foo_calculator=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Lax';
+  el('btn_clear').style.display = 'none';
+  // Reset state
+  state.deductibles = [];
+  state.debts = [];
+  state.goals8 = [];
+  state.goals9 = [];
+  state.s2_confirmed = null;
+  state.s3_confirmed = null;
+  state.s1_confirmed = null;
+  state.s6_manuallySet = false;
+  state.s6_methodManuallySet = false;
+  state.s6_userTyped = false;
+  // Reset form inputs
+  ['m_age','m_income','m_monthly_exp','m_cash',
+   's2_match_pct','s2_contrib_pct','s2_hsa_match_amt',
+   's5_roth_contrib','s5_roth_spouse_contrib','s5_hsa_contrib',
+   's6_contrib','s7_extra_savings'].forEach(id => { if (el(id)) el(id).value = ''; });
+  // Reset confirmations UI
+  el('s1_confirm_yes').className = 'status-btn';
+  el('s1_confirm_skip').className = 'status-btn';
+  el('s1_detail_wrap').style.display = 'none';
+  el('s2_confirm_yes').className = 'status-btn';
+  el('s2_confirm_no').className = 'status-btn';
+  el('s2_detail_wrap').style.display = 'none';
+  el('s3_confirm_yes').className = 'status-btn';
+  el('s3_confirm_no').className = 'status-btn';
+  el('s3_detail_wrap').style.display = 'none';
+  el('s4_method_label').style.display = 'none';
+  el('s7_method_label').style.display = 'none';
+  renderDeductibles();
+  renderDebts();
+  renderGoals(8);
+  renderGoals(9);
+  compute();
+  showToast('✓ Data cleared');
+}
+
+function exportData() {
+  const data = gatherFormState();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = `foo-calculator-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('⬇ Export downloaded');
+}
+
+function importData() { el('importFile').click(); }
+
+function handleImport(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      restoreFormState(data);
+      showToast('✓ Data imported successfully');
+    } catch { showToast('✕ Invalid file'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function showToast(msg) {
+  const t = el('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+(function init() {
+  // Show clear button if saved data exists
+  const hasSaved = !!(localStorage.getItem('foo_calculator') || document.cookie.match(/foo_calculator=/));
+  if (hasSaved) el('btn_clear').style.display = '';
+
+  // Try localStorage first
+  try {
+    const ls = localStorage.getItem('foo_calculator');
+    if (ls) { restoreFormState(JSON.parse(ls)); return; }
+  } catch {}
+  // Try cookie
+  try {
+    const cookieMatch = document.cookie.match(/foo_calculator=([^;]+)/);
+    if (cookieMatch) { restoreFormState(JSON.parse(decodeURIComponent(cookieMatch[1]))); return; }
+  } catch {}
+  // No saved data
+  renderGoals(8); renderGoals(9); compute();
+})();
+</script>
+</body>
+</html>
